@@ -1,2 +1,2 @@
 # MOLE
-MOLE: Medical Overviewing Litterature Engine
+MOLE: Medical Overviewing Literature Engine
