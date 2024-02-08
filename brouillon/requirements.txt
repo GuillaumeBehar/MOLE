@@ -1,0 +1,8 @@
+streamlit
+streamlit_chat
+sentence-transformers
+langchain
+pypdf
+chromadb
+torch
+llama-cpp-python
