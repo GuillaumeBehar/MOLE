@@ -40,12 +40,10 @@ class LocalLLM(LLM):
         self.model = LlamaCpp(
             model_path=model_path, n_gpu_layers=-1, n_batch=512, n_ctx=2048
         )
-        self.loaded = True  # Update loaded attribute after successful loading
-        self.name = get_filename(
-            model_path
-        )  # Update name attribute after successful loading
+        self.loaded = True
+        self.name = get_filename(model_path)
 
-    def kill_model(self) -> str:
+    def kill_model(self) -> None:
         """Kill the LlamaCpp model."""
         del self.model
         self.model = None

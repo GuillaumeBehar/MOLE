@@ -1,0 +1,12 @@
+huggingface_login:
+  email: "YOUR_EMAIL"
+  passwd: "YOUR_PASSWORD"
+
+cookies_directory: "./cookies"
+
+collections_directory: "./collections"
+
+model_directory: "YOUR_MODEL_DIRECTORY"
+
+
+

@@ -58,7 +58,7 @@ class HugChatLLM(LLM):
         return self.model.query(prompt, web_search=web_search)
 
     def ask_stream(self, prompt: str, web_search: bool = False) -> Generator:
-        """Streams the response from the HugChat model."""
+        """Streams the response from the LLM."""
         if not self.loaded:
             raise ValueError("Model not loaded. Please load the model first.")
         for resp in self.model.query(prompt, stream=True, web_search=web_search):
@@ -70,9 +70,9 @@ class HugChatLLM(LLM):
 
 # Example usage of HugChatLLM
 if __name__ == "__main__":
-    config = load_yaml(
-        MAIN_DIR_PATH + "./config.yaml"
-    )  # Path to your configuration file
+    config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
+
+    # Create an instance of HugChatLLM
     hugchat_llm = HugChatLLM(config)
 
     # Ask a question
