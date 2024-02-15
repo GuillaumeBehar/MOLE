@@ -14,6 +14,7 @@ sys.path.append(up(up(os.path.abspath(__file__))))
 from models.hugchat_llm import *
 from models.local_llm import *
 from models.rag import *
+from utils.utils import *
 
 
 class SimpleRetrieveRAG(RAG):
@@ -35,9 +36,9 @@ class SimpleRetrieveRAG(RAG):
         """
         )
 
-    def ingest(self, raw_documents) -> None:
+    def ingest(self, raw_documents: list[str]) -> None:
         """Ingest documents into the collection."""
-        documents = self.text_splitter.split_documents(raw_documents)
+        documents = self.text_splitter.create_documents(raw_documents)
         self.collection.add(
             documents=[documents[k].page_content for k in range(len(documents))],
             ids=[str(k) for k in range(len(documents))],
@@ -46,6 +47,7 @@ class SimpleRetrieveRAG(RAG):
     def retrieve(self, question: str) -> str:
         """Retrieves relevant context for the given question."""
         results = self.collection.query(query_texts=[question], n_results=5)
+        print(results["documents"])
         return results["documents"]
 
     def ask(self, question):
@@ -65,7 +67,7 @@ if __name__ == "__main__":
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
     llm = HugChatLLM(config)
     rag = SimpleRetrieveRAG(llm, config)
-    rag.load_collection("rag")
-    question = "Quel est le nom de la Reine ?"
+    rag.load_collection("test_collection")
+    question = "How should the caregivers care about the patients ?"
     for word in rag.ask_stream(question):
         print(word)

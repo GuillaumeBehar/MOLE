@@ -36,6 +36,14 @@ class RAG:
         """Ingest documents into the collection."""
         pass  # This method will be implemented in subclasses
 
+    def ingest_folder(self, raw_documents: list[str]) -> None:
+        """Ingest documents into the collection."""
+        documents = self.text_splitter.create_documents(raw_documents)
+        self.collection.add(
+            documents=[documents[k].page_content for k in range(len(documents))],
+            ids=[str(k) for k in range(len(documents))],
+        )
+
     def retrieve(self, question: str) -> str:
         """Retrieve relevant documents from the collection."""
         pass  # This method will be implemented in subclasses
