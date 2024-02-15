@@ -10,7 +10,7 @@ from os.path import dirname as up
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 from llm import LLM
-from utils import *
+from utils.utils import *
 
 MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
 

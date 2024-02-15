@@ -1,5 +1,7 @@
 import chromadb
 from typing import Generator
+import xml.etree.ElementTree as ET
+from tqdm import tqdm
 
 import sys
 import os
@@ -7,6 +9,9 @@ from os.path import dirname as up
 
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
+
+from utils.utils import *
+from utils.lecture_xml import *
 
 MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
 
@@ -25,24 +30,22 @@ class RAG:
         )
 
     def load_collection(self, collection_name: str) -> None:
-        """Load or create a collection for retrieval."""
-        try:
-            self.collection = self.chroma_client.get_collection(name=collection_name)
-        except Exception as e:
-            print("Error loading collection: %s", e)
-            self.collection = self.chroma_client.create_collection(name=collection_name)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name, embedding_function=self.embedding_function
+        )
 
     def ingest(self, raw_documents) -> None:
         """Ingest documents into the collection."""
         pass  # This method will be implemented in subclasses
 
-    def ingest_folder(self, raw_documents: list[str]) -> None:
-        """Ingest documents into the collection."""
-        documents = self.text_splitter.create_documents(raw_documents)
-        self.collection.add(
-            documents=[documents[k].page_content for k in range(len(documents))],
-            ids=[str(k) for k in range(len(documents))],
-        )
+    def ingest_folder(self, folder_path: str) -> None:
+        """Ingest every documents in a folder into the collection."""
+        xml_paths = get_xml_paths(folder_path)
+        for xml_path in tqdm(xml_paths, desc="Ingesting documents"):
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+            raw_documents = recup_abstract(root)
+            self.ingest(raw_documents)
 
     def retrieve(self, question: str) -> str:
         """Retrieve relevant documents from the collection."""

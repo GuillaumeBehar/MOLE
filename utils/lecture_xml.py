@@ -1,28 +1,27 @@
 import xml.etree.ElementTree as ET
 
-# Chargement du fichier XML
-tree = ET.parse('./data/PMC10500033.xml')
-root = tree.getroot()
 
 def recup_abstract(element, indent=0, abstract_list=None):
     if abstract_list is None:
         abstract_list = []
-    
+
     # Vérifier si element.text est défini
-    if element.tag == 'text':
+    if element.tag == "text":
         abstract_list.append(element.text.strip())
 
     for key, value in element.attrib.items():
-            if value == 'section_type':
-                if element.text and element.text.strip():
-                    if element.text.strip() == 'INTRO':
-                        abstract_list.append(element.text.strip())
+        if value == "section_type":
+            if element.text and element.text.strip():
+                if element.text.strip() == "INTRO":
+                    abstract_list.append(element.text.strip())
 
     for child in element:
         recup_abstract(child, indent + 1, abstract_list)
 
     # Trouver l'index de 'INTRODUCTION' dans la liste
-    introduction_index = next((i for i, text in enumerate(abstract_list) if 'INTRO' in text), None)
+    introduction_index = next(
+        (i for i, text in enumerate(abstract_list) if "INTRO" in text), None
+    )
 
     # Si 'INTRODUCTION' est trouvé, retourner la partie avant 'INTRODUCTION'
     if introduction_index is not None:
@@ -42,10 +41,12 @@ def concatener_courtes(abstract_list):
         if len(abstract_list[i]) < 20:
             # Concaténer avec la chaîne suivante si elle existe
             if i + 1 < len(abstract_list):
-                nouvelle_liste.append(abstract_list[i] + ' ' + abstract_list[i + 1])
+                nouvelle_liste.append(abstract_list[i] + " " + abstract_list[i + 1])
                 i += 2  # Passer à l'élément suivant après la concaténation
             else:
-                nouvelle_liste.append(abstract_list[i])  # Ajouter la dernière chaîne si elle n'a pas de suivante
+                nouvelle_liste.append(
+                    abstract_list[i]
+                )  # Ajouter la dernière chaîne si elle n'a pas de suivante
                 i += 1  # Passer à l'élément suivant
         else:
             nouvelle_liste.append(abstract_list[i])  # Ajouter la chaîne telle quelle

@@ -6,7 +6,7 @@ from os.path import dirname as up
 from models.hugchat_llm import *
 from models.local_llm import *
 from models.rag import *
-from models.simple_retrieve_rag import *
+from models.simple_retrieve_rag import SimpleRetrieveRAG
 from utils.utils import *
 
 MAIN_DIR_PATH = up(os.path.abspath(__file__))
@@ -19,14 +19,13 @@ def display_messages():
     for msg, user, stream in st.session_state["messages"]:
         if user == "user":
             st.session_state["container_message"].chat_message(user).write(msg)
-        elif user == "assistant":
+        elif user == "assistant" and msg != "":
             if not stream:
                 st.session_state["container_message"].chat_message(user).write(msg)
             elif stream:
                 st.session_state["container_message"].chat_message(user).write_stream(
                     msg
                 )
-            st.session_state["container_message"].chat_message(user).write_stream(msg)
     st.session_state["thinking_spinner"] = st.empty()
 
 
@@ -37,26 +36,18 @@ def process_input():
     ):
         user_text = st.session_state["user_input"].strip()
         st.session_state["messages"].append((user_text, "user", False))
-        if st.session_state["llm"]:
+        if st.session_state["llm"] and st.session_state["llm"].loaded:
             with st.session_state["thinking_spinner"], st.spinner(f"Thinking"):
                 if st.session_state["toggle_rag"]:
-                    if st.session_state["rag"].llm.local:
-                        agent_text = st.session_state["rag"].ask(user_text)
-                        stream = False
-                    else:
-                        agent_text = st.session_state["rag"].ask_stream(
-                            user_text, web_search=st.session_state["toggle_web_search"]
-                        )
-                        stream = True
+                    agent_text = st.session_state["rag"].ask_stream(
+                        user_text, web_search=st.session_state["toggle_web_search"]
+                    )
+                    stream = True
                 else:
-                    if st.session_state["llm"].local:
-                        agent_text = st.session_state["llm"].ask(user_text)
-                        stream = False
-                    else:
-                        agent_text = st.session_state["llm"].ask_stream(
-                            user_text, web_search=st.session_state["toggle_web_search"]
-                        )
-                        stream = True
+                    agent_text = st.session_state["llm"].ask_stream(
+                        user_text, web_search=st.session_state["toggle_web_search"]
+                    )
+                    stream = True
             st.session_state["messages"].append((agent_text, "assistant", stream))
         else:
             st.session_state["messages"].append(
@@ -73,7 +64,9 @@ def llm_loader():
         else:
             print("No model loaded")
         if st.session_state["toggle_local_llm"]:
+            print(type(st.session_state["llm"]))
             if type(st.session_state["llm"]) != LocalLLM:
+                print("a")
                 st.session_state["messages"] = []
                 st.session_state["llm"] = LocalLLM()
             col1, col2 = st.columns((4, 1))
@@ -111,7 +104,7 @@ def llm_loader():
                 st.write("LLM loaded \u2705")
             else:
                 st.session_state["load_model_spinner"] = st.empty()
-            st.toggle("Web search", key="toggle_web_search")
+        st.toggle("Web search", key="toggle_web_search")
 
 
 def rag_loader():
@@ -119,11 +112,14 @@ def rag_loader():
     with st.spinner(f"Loading"):
         st.toggle("Use RAG", key="toggle_rag")
         if st.session_state["toggle_rag"] and st.session_state["rag"] is None:
+            st.session_state["messages"] = []
             st.session_state["rag"] = SimpleRetrieveRAG(
                 st.session_state["llm"], st.session_state["config"]
             )
             st.session_state["rag"].load_collection("test_collection")
-        elif st.session_state["rag"] is not None:
+        elif not st.session_state["toggle_rag"] and st.session_state["rag"] is not None:
+            st.session_state["messages"] = []
+            del st.session_state["rag"]
             st.session_state["rag"] = None
 
 

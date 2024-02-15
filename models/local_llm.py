@@ -1,6 +1,6 @@
 import os
-from typing import List
 from langchain_community.llms import LlamaCpp
+from typing import Generator
 
 import sys
 import os
@@ -9,25 +9,9 @@ from os.path import dirname as up
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 from llm import LLM
-from utils import *
+from utils.utils import *
 
 MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
-
-
-def get_gguf_paths(directory: str) -> List[str]:
-    """Get paths of all files with '.gguf' extension in the specified directory and its subdirectories."""
-    gguf_paths = [
-        os.path.join(root, name)
-        for root, _, files in os.walk(directory)
-        for name in files
-        if name.endswith(".gguf")
-    ]
-    return gguf_paths
-
-
-def get_filename(path: str) -> str:
-    """Get the filename from the given path."""
-    return os.path.basename(path)
 
 
 class LocalLLM(LLM):
@@ -38,7 +22,11 @@ class LocalLLM(LLM):
     def load_model(self, model_path: str) -> None:
         """Loads the LlamaCpp model with the given model path."""
         self.model = LlamaCpp(
-            model_path=model_path, n_gpu_layers=-1, n_batch=512, n_ctx=2048
+            model_path=model_path,
+            n_gpu_layers=-1,
+            n_batch=512,
+            n_ctx=1024 * 16,
+            streaming=True,
         )
         self.loaded = True
         self.name = get_filename(model_path)
@@ -49,11 +37,19 @@ class LocalLLM(LLM):
         self.model = None
         self.loaded = False
 
-    def ask(self, prompt: str) -> str:
+    def ask(self, prompt: str, web_search: bool = False) -> str:
         """Ask the LLM a question."""
+        self.model.streaming = False
         if not self.loaded:
             raise ValueError("Model not loaded. Please load the model first.")
         return self.model(prompt)
+
+    def ask_stream(self, prompt: str, web_search: bool = False) -> Generator:
+        """Streams the response from the LLM."""
+        self.model.streaming = True
+        if not self.loaded:
+            raise ValueError("Model not loaded. Please load the model first.")
+        return self.model.stream(prompt)
 
 
 # Example usage of LocalLLM
@@ -76,7 +72,9 @@ if __name__ == "__main__":
     Réponse : [/INST]
     """
     response = local_llm.ask(prompt)
-    print(response)
+    print("Response:", response)
 
-    # Kill the model
-    local_llm.kill_model()
+    # Stream the response
+    print("Streaming response:")
+    for token in local_llm.ask_stream(prompt):
+        print(token)
