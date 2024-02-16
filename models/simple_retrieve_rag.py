@@ -16,7 +16,7 @@ from utils.utils import *
 
 
 class SimpleRetrieveRAG(RAG):
-    def __init__(self, llm, config) -> None:
+    def __init__(self, llm: LLM, config: dict) -> None:
         """Initialize the class with the provided large language model."""
         super().__init__(llm=llm, config=config, name="SimpleRetrieveRAG")
         self.embedding_function = SentenceTransformerEmbeddingFunction(
@@ -48,7 +48,7 @@ class SimpleRetrieveRAG(RAG):
         results = self.collection.query(query_texts=[question], n_results=5)
         return results["documents"]
 
-    def ask(self, question):
+    def ask(self, question: str) -> str:
         documents = self.retrieve(question)
         context = "\n".join(documents[0])
         prompt = self.prompt_template.format(
@@ -57,7 +57,7 @@ class SimpleRetrieveRAG(RAG):
         print(prompt)
         return self.llm.ask(prompt)
 
-    def ask_stream(self, question, web_search=False):
+    def ask_stream(self, question, web_search=False) -> Generator:
         documents = self.retrieve(question)
         context = "\n".join(documents[0])
         prompt = self.prompt_template.format(
@@ -72,7 +72,9 @@ if __name__ == "__main__":
     llm = HugChatLLM(config)
     rag = SimpleRetrieveRAG(llm, config)
     rag.load_collection("test_collection")
-    # rag.ingest_folder(MAIN_DIR_PATH + rag.config["data_directory"])
+    # rag.ingest_folder(MAIN_DIR_PATH + rag.config["data_directory"], batch_size=64)
+
+    print(rag.collection.count())
 
     total_length = 0
     num_documents = 0

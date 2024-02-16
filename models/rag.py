@@ -10,6 +10,7 @@ from os.path import dirname as up
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 
+from models.local_llm import *
 from utils.utils import *
 from utils.lecture_xml import *
 
@@ -17,7 +18,7 @@ MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
 
 
 class RAG:
-    def __init__(self, llm, config, name) -> None:
+    def __init__(self, llm: LLM, config: dict, name: str) -> None:
         """Initialize the RAG class with the provided large language model."""
         self.name = name
         self.llm = llm
@@ -38,13 +39,16 @@ class RAG:
         """Ingest documents into the collection."""
         pass  # This method will be implemented in subclasses
 
-    def ingest_folder(self, folder_path: str) -> None:
+    def ingest_folder(self, folder_path: str, batch_size: int) -> None:
         """Ingest every documents in a folder into the collection."""
         xml_paths = get_xml_paths(folder_path)
-        for xml_path in tqdm(xml_paths, desc="Ingesting documents"):
-            tree = ET.parse(xml_path)
-            root = tree.getroot()
-            raw_documents = recup_abstract(root)
+        grouped_xml_paths = group_list(xml_paths, batch_size)
+        for xml_paths in tqdm(grouped_xml_paths, desc="Ingesting documents"):
+            raw_documents = []
+            for xml_path in xml_paths:
+                tree = ET.parse(xml_path)
+                root = tree.getroot()
+                raw_documents.append(recup_abstract(root)[0])
             self.ingest(raw_documents)
 
     def retrieve(self, question: str) -> str:

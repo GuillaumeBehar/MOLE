@@ -3,3 +3,13 @@ config.yaml
 cookies/*
 data/*
 collections/*
+!data/PMC10500000.xml
+!data/PMC10500001.xml
+!data/PMC10500002.xml
+!data/PMC10500003.xml
+!data/PMC10500004.xml
+!data/PMC10500005.xml
+!data/PMC10500006.xml
+!data/PMC10500007.xml
+!data/PMC10500008.xml
+!data/PMC10500009.xml

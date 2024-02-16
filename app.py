@@ -1,4 +1,6 @@
 import streamlit as st
+from PIL import Image
+
 
 import os
 from os.path import dirname as up
@@ -69,16 +71,18 @@ def llm_loader():
                 print("a")
                 st.session_state["messages"] = []
                 st.session_state["llm"] = LocalLLM()
-            col1, col2 = st.columns((4, 1))
+
             gguf_paths = get_gguf_paths(st.session_state["config"]["model_directory"])
-            col1.selectbox(
+            st.selectbox(
                 "Select a LLM model",
                 gguf_paths,
                 format_func=get_filename,
                 key="selectbox_local_llm",
                 label_visibility="collapsed",
             )
-            col2.button(label="Load", on_click=load_local_llm)
+            load_col, kill_col = st.columns((1, 3))
+            load_col.button(label="Load", on_click=load_local_llm)
+            kill_col.button(label="Kill", on_click=kill_local_llm)
             if st.session_state["llm"].loaded and st.session_state[
                 "llm"
             ].name == get_filename(st.session_state["selectbox_local_llm"]):
@@ -132,6 +136,11 @@ def load_local_llm():
         print("Changed LLM to : ", st.session_state["llm"].name)
 
 
+def kill_local_llm():
+    st.session_state["messages"] = []
+    st.session_state["llm"].kill_model()
+
+
 def change_hugchat_llm():
     st.session_state["messages"] = []
 
@@ -151,10 +160,11 @@ def page():
         st.session_state["rag"] = None
         st.session_state["config"] = load_yaml(MAIN_DIR_PATH + "./config.yaml")
 
-    st.header("MOLE \U0001F916")
+    st.header("MOLE")
 
     with st.sidebar:
-        # st.image(MAIN_DIR_PATH + "assets/ai.ico")
+        logo = Image.open(MAIN_DIR_PATH + r"\assets\logo.png")
+        st.image(logo, width=300)
         llm_loader()
         rag_loader()
 
