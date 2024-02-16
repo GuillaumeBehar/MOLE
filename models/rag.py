@@ -48,8 +48,31 @@ class RAG:
             for xml_path in xml_paths:
                 tree = ET.parse(xml_path)
                 root = tree.getroot()
-                raw_documents.append(recup_abstract(root)[0])
+                raw_documents.append(recup_tout(root))
             self.ingest(raw_documents)
+
+    def ingest_url(self, batch_size: int, doc_number: int) -> None:
+        """Ingest every documents in a folder into the collection."""
+
+        import urllib3
+
+        http = urllib3.PoolManager()
+
+        index = 10500000
+        doc_gotten = 0
+
+        while doc_gotten < doc_number:
+            raw_documents = []
+            for k in range(batch_size):
+                url = f"https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:{index+k}&metadataPrefix=pmc"
+                response = http.request("GET", url)
+                xml_content = response.data.decode("utf-8")
+                tree = ET.ElementTree(ET.fromstring(xml_content))
+                root = tree.getroot()
+                raw_documents.append(recup_tout(root))
+            self.ingest(raw_documents)
+            index += batch_size
+            doc_gotten += batch_size
 
     def retrieve(self, question: str) -> str:
         """Retrieve relevant documents from the collection."""

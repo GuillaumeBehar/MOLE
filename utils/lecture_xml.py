@@ -1,5 +1,14 @@
 import xml.etree.ElementTree as ET
 
+import sys
+import os
+from os.path import dirname as up
+
+sys.path.append(up(os.path.abspath(__file__)))
+sys.path.append(up(up(os.path.abspath(__file__))))
+
+MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
+
 
 def recup_abstract(element, indent=0, abstract_list=None):
     if abstract_list is None:
@@ -55,18 +64,61 @@ def concatener_courtes(abstract_list):
     return nouvelle_liste
 
 
-
 def recup_tout(element, indent=0, abstract_list=None):
     if abstract_list is None:
         abstract_list = []
-    
-    # Vérifier si element.text est défini
-    if element.tag == 'text':
-        abstract_list.append(element.text.strip())
 
+    # Vérifier si element.text est défini
+    if element.tag == "text":
+        abstract_list.append(element.text.strip())
 
     for child in element:
         recup_abstract(child, indent + 1, abstract_list)
 
     # Sinon, retourner toute la liste
-    return ' '.join(abstract_list)
+    return " ".join(abstract_list)
+
+
+if __name__ == "__main__":
+
+    xml_path = MAIN_DIR_PATH + "./data/PMC10500001.xml"
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    import urllib3
+
+    url = "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:10500000&metadataPrefix=pmc"
+
+    http = urllib3.PoolManager()
+    response = http.request("GET", url)
+    xml_content = response.data.decode("utf-8")
+
+    # tree = ET.ElementTree(ET.fromstring(xml_content))
+    # print(tree)
+    # root = tree.getroot()
+    # print(root[0])
+    # toto = root.findall('GetRecord')
+    # print(toto)
+
+    # xml_bytes = ET.tostring(root, encoding="utf-8")
+    # print(root[0])
+
+    tree = ET.ElementTree(ET.fromstring(xml_content))
+    root = tree.getroot()
+    print(root)
+
+    def print_elements(element, indent=0):
+        # Print the current element with appropriate indentation
+        print(" " * indent + element.tag)
+
+        # Recursively print children elements
+        for child in element:
+            print_elements(child, indent + 4)
+
+    # Afficher tous les attributs de la racine
+    attributs_racine = root.attrib
+    print("Attributs de la racine :")
+    for attribut, valeur in attributs_racine.items():
+        print(f"{attribut}: {valeur}")
+
+    print(root.get("xmlns"))

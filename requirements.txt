@@ -8,3 +8,4 @@ chroma-migrate
 torch
 llama-cpp-python
 hugchat
+urllib3

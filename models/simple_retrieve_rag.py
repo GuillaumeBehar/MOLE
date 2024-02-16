@@ -20,14 +20,14 @@ class SimpleRetrieveRAG(RAG):
         """Initialize the class with the provided large language model."""
         super().__init__(llm=llm, config=config, name="SimpleRetrieveRAG")
         self.embedding_function = SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
+            model_name="all-MiniLM-L6-v2", device="cuda"
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=512, chunk_overlap=64
+            chunk_size=1024, chunk_overlap=64
         )
         self.prompt_template = PromptTemplate.from_template(
             """
-            You are an assistant for question-answering tasks. You are a medecin expert. Use the following retrieved context pieces to answer the question. If you don't know the answer, just say you don't know. Use up to three sentences and keep the response concise.
+            As a specialized medical assistant for question-answering, your expertise lies in the field of medicine. Utilizing the provided context pieces, you're tasked with delivering accurate responses. If uncertain, simply acknowledge that you're unable to provide an answer. Responses should be succinct, comprising up to three sentences for clarity and efficiency.
             Question : {question}
             Context : {context}
             Answer :
@@ -37,9 +37,11 @@ class SimpleRetrieveRAG(RAG):
     def ingest(self, raw_documents: list[str]) -> None:
         """Ingest documents into the collection."""
         documents = self.text_splitter.create_documents(raw_documents)
+        document_content = [documents[k].page_content for k in range(len(documents))]
+        print(len(document_content))
         current_count = self.collection.count()
         self.collection.add(
-            documents=[documents[k].page_content for k in range(len(documents))],
+            documents=document_content,
             ids=[str(k + current_count) for k in range(len(documents))],
         )
 
@@ -69,10 +71,13 @@ class SimpleRetrieveRAG(RAG):
 
 if __name__ == "__main__":
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
-    llm = HugChatLLM(config)
+    llm = LLM(True, True, "test")
     rag = SimpleRetrieveRAG(llm, config)
-    rag.load_collection("test_collection")
-    # rag.ingest_folder(MAIN_DIR_PATH + rag.config["data_directory"], batch_size=64)
+    rag.load_collection("test2_collection")
+
+    # rag.ingest_folder(MAIN_DIR_PATH + rag.config["data_directory"], batch_size=128)
+
+    # rag.ingest_url(batch_size=4, doc_number=16)
 
     print(rag.collection.count())
 

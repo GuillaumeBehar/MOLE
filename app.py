@@ -66,9 +66,7 @@ def llm_loader():
         else:
             print("No model loaded")
         if st.session_state["toggle_local_llm"]:
-            print(type(st.session_state["llm"]))
             if type(st.session_state["llm"]) != LocalLLM:
-                print("a")
                 st.session_state["messages"] = []
                 st.session_state["llm"] = LocalLLM()
 
@@ -120,7 +118,7 @@ def rag_loader():
             st.session_state["rag"] = SimpleRetrieveRAG(
                 st.session_state["llm"], st.session_state["config"]
             )
-            st.session_state["rag"].load_collection("test_collection")
+            st.session_state["rag"].load_collection("test2_collection")
         elif not st.session_state["toggle_rag"] and st.session_state["rag"] is not None:
             st.session_state["messages"] = []
             del st.session_state["rag"]

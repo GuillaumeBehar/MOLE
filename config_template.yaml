@@ -1,3 +1,5 @@
+# AFTER COMPLETING THIS FILE: RENAME IT AS config.yaml AND SAVE IT IN THE SAME DIRECTORY AS THIS FILE.
+
 huggingface_login:
   email: "YOUR_EMAIL"
   passwd: "YOUR_PASSWORD"

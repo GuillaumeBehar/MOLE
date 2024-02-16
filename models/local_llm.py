@@ -56,7 +56,7 @@ class LocalLLM(LLM):
 if __name__ == "__main__":
     config_path = MAIN_DIR_PATH + "./config.yaml"
     model_directory = load_yaml(config_path)["model_directory"]
-    model_path = get_gguf_paths(model_directory)[0]
+    model_path = get_gguf_paths(model_directory)[1]
 
     # Create an instance of LocalLLM
     local_llm = LocalLLM()
