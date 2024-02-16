@@ -53,3 +53,20 @@ def concatener_courtes(abstract_list):
             i += 1  # Passer à l'élément suivant
 
     return nouvelle_liste
+
+
+
+def recup_tout(element, indent=0, abstract_list=None):
+    if abstract_list is None:
+        abstract_list = []
+    
+    # Vérifier si element.text est défini
+    if element.tag == 'text':
+        abstract_list.append(element.text.strip())
+
+
+    for child in element:
+        recup_abstract(child, indent + 1, abstract_list)
+
+    # Sinon, retourner toute la liste
+    return ' '.join(abstract_list)
