@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import urllib3
 
 import sys
 import os
@@ -79,46 +80,99 @@ def recup_tout(element, indent=0, abstract_list=None):
     return " ".join(abstract_list)
 
 
+def recursive_print(element, indent=0):
+    print("  " * indent + element.tag + ":", element.text)
+    for child in element:
+        recursive_print(child, indent + 1)
+
+
+def recursive_get_text(element):
+    # Initialize an empty string to store text content
+    all_text = ""
+
+    # Check if the node has text content
+    if element.text and len(element.text) > 10:
+        all_text += element.text + " "
+
+    # Recursively traverse child nodes
+    for child in element:
+        all_text += recursive_get_text(child) + " "
+
+    # Check if the node has tail content
+    if element.tail and len(element.tail) > 10:
+        all_text += element.tail + " "
+
+    return all_text
+
+
+def get_data(id: int, api: bool = False):
+    document = {"metadata": {"abstract": ""}, "text": ""}
+
+    if api == True:
+        try:
+            url = f"https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:{id}&metadataPrefix=pmc"
+            http = urllib3.PoolManager()
+            response = http.request("GET", url)
+            xml_content = response.data.decode("utf-8")
+            root = ET.fromstring(xml_content)
+            namespace = "{https://jats.nlm.nih.gov/ns/archiving/1.3/}"
+
+            # Get the id
+            document["metadata"]["id"] = id
+
+            # Get the title
+            document["metadata"]["title"] = root.find(
+                ".//" + namespace + "article-title"
+            ).text
+
+            # Get the abstract
+            abstracts = root.findall(".//" + namespace + "abstract")
+            abstract_text = " ".join(
+                [recursive_get_text(abstract) for abstract in abstracts]
+            )
+            document["metadata"]["abstract"] = abstract_text.strip()
+
+            # Get the body
+            body = root.findall(".//" + namespace + "body")
+            body_text = " ".join([recursive_get_text(b) for b in body])
+            document["text"] = body_text.strip()
+            return document
+        except:
+            raise Exception(f"PMC{id} not found")
+    else:
+        try:
+            xml_path = MAIN_DIR_PATH + f"./data/PMC{id}.xml"
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+
+            document["metadata"]["id"] = id
+
+            for child in root:
+                if child.tag == "document":
+                    for passage in child:
+                        if passage.tag == "passage":
+                            tag = "body"
+                            text = ""
+                            for infon in passage:
+                                if infon.tag == "infon":
+                                    if infon.text == "ABSTRACT":
+                                        tag = "abstract"
+                                    elif infon.text == "TITLE":
+                                        tag = "title"
+                                if infon.tag == "text":
+                                    text = infon.text
+                            if tag == "abstract":
+                                document["metadata"]["abstract"] += text + " "
+                            elif tag == "title":
+                                document["metadata"]["title"] = text
+                            else:
+                                document["text"] += text + " "
+            return document
+        except:
+            raise Exception(f"PMC{id} not found")
+
+
 if __name__ == "__main__":
 
-    xml_path = MAIN_DIR_PATH + "./data/PMC10500001.xml"
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-
-    import urllib3
-
-    url = "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:10500000&metadataPrefix=pmc"
-
-    http = urllib3.PoolManager()
-    response = http.request("GET", url)
-    xml_content = response.data.decode("utf-8")
-
-    # tree = ET.ElementTree(ET.fromstring(xml_content))
-    # print(tree)
-    # root = tree.getroot()
-    # print(root[0])
-    # toto = root.findall('GetRecord')
-    # print(toto)
-
-    # xml_bytes = ET.tostring(root, encoding="utf-8")
-    # print(root[0])
-
-    tree = ET.ElementTree(ET.fromstring(xml_content))
-    root = tree.getroot()
-    print(root)
-
-    def print_elements(element, indent=0):
-        # Print the current element with appropriate indentation
-        print(" " * indent + element.tag)
-
-        # Recursively print children elements
-        for child in element:
-            print_elements(child, indent + 4)
-
-    # Afficher tous les attributs de la racine
-    attributs_racine = root.attrib
-    print("Attributs de la racine :")
-    for attribut, valeur in attributs_racine.items():
-        print(f"{attribut}: {valeur}")
-
-    print(root.get("xmlns"))
+    for k in range(10):
+        print(get_data(10500000 + k, False))

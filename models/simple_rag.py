@@ -9,13 +9,10 @@ from os.path import dirname as up
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 
-from models.hugchat_llm import *
-from models.local_llm import *
 from models.rag import *
-from utils.utils import *
 
 
-class SimpleRetrieveRAG(RAG):
+class SimpleRAG(RAG):
     def __init__(self, llm: LLM, config: dict) -> None:
         """Initialize the class with the provided large language model."""
         super().__init__(llm=llm, config=config, name="SimpleRetrieveRAG")
@@ -36,12 +33,12 @@ class SimpleRetrieveRAG(RAG):
 
     def ingest(self, raw_documents: list[str]) -> None:
         """Ingest documents into the collection."""
-        documents = self.text_splitter.create_documents(raw_documents)
-        document_content = [documents[k].page_content for k in range(len(documents))]
-        print(len(document_content))
+        documents = self.text_splitter.create_documents(
+            [document["text"] for document in raw_documents]
+        )
         current_count = self.collection.count()
         self.collection.add(
-            documents=document_content,
+            documents=[document.page_content for document in documents],
             ids=[str(k + current_count) for k in range(len(documents))],
         )
 
@@ -71,13 +68,17 @@ class SimpleRetrieveRAG(RAG):
 
 if __name__ == "__main__":
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
-    llm = LLM(True, True, "test")
-    rag = SimpleRetrieveRAG(llm, config)
-    rag.load_collection("test2_collection")
+    llm = LLM(False, True, "test")
+    rag = SimpleRAG(llm, config)
+    rag.load_collection("test4_collection")
 
-    # rag.ingest_folder(MAIN_DIR_PATH + rag.config["data_directory"], batch_size=128)
-
-    # rag.ingest_url(batch_size=4, doc_number=16)
+    rag.ingest_batch(
+        batch_size=16,
+        doc_number=176288,
+        data_getter=get_data,
+        doc_start=10500000,
+        api=False,
+    )
 
     print(rag.collection.count())
 
@@ -85,6 +86,8 @@ if __name__ == "__main__":
     num_documents = 0
     dict = rag.collection.get(include=["embeddings", "documents", "metadatas"])
     documents = dict["documents"]
+    print(documents[1])
+    print(dict["metadatas"][1])
 
     for document in documents:
         total_length += len(document)

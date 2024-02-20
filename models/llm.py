@@ -9,7 +9,7 @@ class LLM:
         self.name = name
         self.model = None
 
-    def ask(self, question: str) -> str:
+    def ask(self, prompt: str, web_search: bool = False) -> str:
         """Ask the LLM a question."""
         pass  # This method will be implemented in subclasses
 

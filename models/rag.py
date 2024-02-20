@@ -10,6 +10,7 @@ from os.path import dirname as up
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 
+from models.hugchat_llm import *
 from models.local_llm import *
 from utils.utils import *
 from utils.lecture_xml import *
@@ -39,38 +40,35 @@ class RAG:
         """Ingest documents into the collection."""
         pass  # This method will be implemented in subclasses
 
-    def ingest_folder(self, folder_path: str, batch_size: int) -> None:
-        """Ingest every documents in a folder into the collection."""
-        xml_paths = get_xml_paths(folder_path)
-        grouped_xml_paths = group_list(xml_paths, batch_size)
-        for xml_paths in tqdm(grouped_xml_paths, desc="Ingesting documents"):
-            raw_documents = []
-            for xml_path in xml_paths:
-                tree = ET.parse(xml_path)
-                root = tree.getroot()
-                raw_documents.append(recup_tout(root))
-            self.ingest(raw_documents)
-
-    def ingest_url(self, batch_size: int, doc_number: int) -> None:
-        """Ingest every documents in a folder into the collection."""
-
-        import urllib3
-
-        http = urllib3.PoolManager()
-
-        index = 10500000
+    def ingest_batch(
+        self, batch_size: int, doc_number: int, data_getter, doc_start: int, api: bool
+    ) -> None:
+        """Ingest a batch of documents into the collection."""
+        index = doc_start
         doc_gotten = 0
 
-        while doc_gotten < doc_number:
+        import time
+
+        for _ in tqdm(range(doc_number // batch_size), desc="Ingesting documents"):
+            now = time.time()
             raw_documents = []
             for k in range(batch_size):
-                url = f"https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:{index+k}&metadataPrefix=pmc"
-                response = http.request("GET", url)
-                xml_content = response.data.decode("utf-8")
-                tree = ET.ElementTree(ET.fromstring(xml_content))
-                root = tree.getroot()
-                raw_documents.append(recup_tout(root))
-            self.ingest(raw_documents)
+                try:
+                    document = data_getter(index + k, api)
+                    if document is not None:
+                        raw_documents.append(document)
+                except Exception as e:
+                    # print(f"Error retrieving document {index + k}: {e}")
+                    pass
+            print(
+                f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
+            )
+            now = time.time()
+            if len(raw_documents) > 0:
+                self.ingest(raw_documents)
+                print(
+                    f"Ingested {len(raw_documents)} documents in {time.time() - now} seconds"
+                )
             index += batch_size
             doc_gotten += batch_size
 

@@ -8,7 +8,7 @@ from os.path import dirname as up
 from models.hugchat_llm import *
 from models.local_llm import *
 from models.rag import *
-from models.simple_retrieve_rag import SimpleRetrieveRAG
+from models.simple_rag import SimpleRAG
 from utils.utils import *
 
 MAIN_DIR_PATH = up(os.path.abspath(__file__))
@@ -78,9 +78,9 @@ def llm_loader():
                 key="selectbox_local_llm",
                 label_visibility="collapsed",
             )
-            load_col, kill_col = st.columns((1, 3))
+            load_col, unload_col = st.columns((1, 3))
             load_col.button(label="Load", on_click=load_local_llm)
-            kill_col.button(label="Kill", on_click=kill_local_llm)
+            unload_col.button(label="Unload", on_click=unload_local_llm)
             if st.session_state["llm"].loaded and st.session_state[
                 "llm"
             ].name == get_filename(st.session_state["selectbox_local_llm"]):
@@ -90,7 +90,7 @@ def llm_loader():
 
         else:
             if type(st.session_state["llm"]) == LocalLLM:
-                st.session_state["llm"].kill_model()
+                st.session_state["llm"].unload_model()
             if type(st.session_state["llm"]) != HugChatLLM:
                 st.session_state["messages"] = []
                 st.session_state["llm"] = HugChatLLM(st.session_state["config"])
@@ -115,7 +115,7 @@ def rag_loader():
         st.toggle("Use RAG", key="toggle_rag")
         if st.session_state["toggle_rag"] and st.session_state["rag"] is None:
             st.session_state["messages"] = []
-            st.session_state["rag"] = SimpleRetrieveRAG(
+            st.session_state["rag"] = SimpleRAG(
                 st.session_state["llm"], st.session_state["config"]
             )
             st.session_state["rag"].load_collection("test2_collection")
@@ -134,9 +134,9 @@ def load_local_llm():
         print("Changed LLM to : ", st.session_state["llm"].name)
 
 
-def kill_local_llm():
+def unload_local_llm():
     st.session_state["messages"] = []
-    st.session_state["llm"].kill_model()
+    st.session_state["llm"].unload_model()
 
 
 def change_hugchat_llm():

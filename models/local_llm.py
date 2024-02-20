@@ -8,6 +8,7 @@ from os.path import dirname as up
 
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
+
 from llm import LLM
 from utils.utils import *
 
@@ -19,34 +20,32 @@ class LocalLLM(LLM):
         """Initializes the LocalLLM object with the given model path."""
         super().__init__(local=True, loaded=False, name=None)
 
-    def load_model(self, model_path: str) -> None:
+    def load_model(self, model_path: str, nb_layer_offload: int = -1) -> None:
         """Loads the LlamaCpp model with the given model path."""
-        self.model = LlamaCpp(
-            model_path=model_path,
-            n_gpu_layers=-1,
-            n_batch=512,
-            n_ctx=1024 * 16,
-            streaming=True,
-        )
-        self.loaded = True
-        self.name = get_filename(model_path)
+        try:
+            self.model = LlamaCpp(
+                model_path=model_path,
+                n_gpu_layers=nb_layer_offload,
+            )
+            self.loaded = True
+            self.name = get_filename(model_path)
+        except Exception as e:
+            raise RuntimeError(f"Error loading model: {e}")
 
-    def kill_model(self) -> None:
-        """Kill the LlamaCpp model."""
+    def unload_model(self) -> None:
+        """Unloads the LlamaCpp model."""
         del self.model
         self.model = None
         self.loaded = False
 
     def ask(self, prompt: str, web_search: bool = False) -> str:
         """Ask the LLM a question."""
-        self.model.streaming = False
         if not self.loaded:
             raise ValueError("Model not loaded. Please load the model first.")
         return self.model(prompt)
 
     def ask_stream(self, prompt: str, web_search: bool = False) -> Generator:
         """Streams the response from the LLM."""
-        self.model.streaming = True
         if not self.loaded:
             raise ValueError("Model not loaded. Please load the model first.")
         return self.model.stream(prompt)
