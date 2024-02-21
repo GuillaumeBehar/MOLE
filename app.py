@@ -9,6 +9,7 @@ from models.hugchat_llm import *
 from models.local_llm import *
 from models.rag import *
 from models.simple_rag import SimpleRAG
+from models.metadata_rag import MetadataRAG
 from utils.utils import *
 
 MAIN_DIR_PATH = up(os.path.abspath(__file__))
@@ -115,10 +116,10 @@ def rag_loader():
         st.toggle("Use RAG", key="toggle_rag")
         if st.session_state["toggle_rag"] and st.session_state["rag"] is None:
             st.session_state["messages"] = []
-            st.session_state["rag"] = SimpleRAG(
+            st.session_state["rag"] = MetadataRAG(
                 st.session_state["llm"], st.session_state["config"]
             )
-            st.session_state["rag"].load_collection("test2_collection")
+            st.session_state["rag"].load_collection("test_collection")
         elif not st.session_state["toggle_rag"] and st.session_state["rag"] is not None:
             st.session_state["messages"] = []
             del st.session_state["rag"]

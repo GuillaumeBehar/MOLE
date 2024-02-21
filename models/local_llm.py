@@ -1,6 +1,7 @@
 import os
 from langchain_community.llms import LlamaCpp
 from typing import Generator
+from tqdm import tqdm
 
 import sys
 import os
@@ -55,6 +56,7 @@ class LocalLLM(LLM):
 if __name__ == "__main__":
     config_path = MAIN_DIR_PATH + "./config.yaml"
     model_directory = load_yaml(config_path)["model_directory"]
+    print(get_gguf_paths(model_directory))
     model_path = get_gguf_paths(model_directory)[1]
 
     # Create an instance of LocalLLM
@@ -64,16 +66,24 @@ if __name__ == "__main__":
     local_llm.load_model(model_path)
 
     # Ask a question
-    question = "Comment vas-tu?"
-    prompt = f"""
-    <s> [INST] Vous êtes un assistant pour les tâches de question-réponse. Si vous ne connaissez pas la réponse, dites simplement que vous ne savez pas. [/INST] </s>
-    [INST] Question : {question}
-    Réponse : [/INST]
-    """
-    response = local_llm.ask(prompt)
-    print("Response:", response)
+    questions = [
+        "Comment vas-tu?",
+        "Pourqoi tu es triste?",
+        "Quel est ton nom?",
+        "Quel est ton âge?",
+        "Quel est ton sexe?",
+    ]
+
+    for question in tqdm(questions, desc="Asking questions"):
+        prompt = f"""
+        <s> [INST] Vous êtes un assistant pour les tâches de question-réponse. Si vous ne connaissez pas la réponse, dites simplement que vous ne savez pas. [/INST] </s>
+        [INST] Question : {question}
+        Réponse : [/INST]
+        """
+        response = local_llm.ask(prompt)
+        print("Response:", response)
 
     # Stream the response
-    print("Streaming response:")
-    for token in local_llm.ask_stream(prompt):
-        print(token)
+    # print("Streaming response:")
+    # for token in local_llm.ask_stream(prompt):
+    #     print(token)

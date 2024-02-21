@@ -80,7 +80,7 @@ def recup_tout(element, indent=0, abstract_list=None):
     return " ".join(abstract_list)
 
 
-def recursive_print(element, indent=0):
+def recursive_print(element, indent: int = 0) -> None:
     print("  " * indent + element.tag + ":", element.text)
     for child in element:
         recursive_print(child, indent + 1)
@@ -105,7 +105,7 @@ def recursive_get_text(element):
     return all_text
 
 
-def get_data(id: int, api: bool = False):
+def get_data(id: int, api: bool = False) -> None:
     document = {"metadata": {"abstract": ""}, "text": ""}
 
     if api == True:

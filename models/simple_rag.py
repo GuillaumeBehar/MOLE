@@ -31,7 +31,7 @@ class SimpleRAG(RAG):
             """
         )
 
-    def ingest(self, raw_documents: list[str]) -> None:
+    def ingest(self, raw_documents: list[dict]) -> None:
         """Ingest documents into the collection."""
         documents = self.text_splitter.create_documents(
             [document["text"] for document in raw_documents]
@@ -47,7 +47,8 @@ class SimpleRAG(RAG):
         results = self.collection.query(query_texts=[question], n_results=5)
         return results["documents"]
 
-    def ask(self, question: str) -> str:
+    def ask(self, question: str, web_search: bool = False) -> str:
+        """Ask the RAG a question."""
         documents = self.retrieve(question)
         context = "\n".join(documents[0])
         prompt = self.prompt_template.format(
@@ -56,7 +57,8 @@ class SimpleRAG(RAG):
         print(prompt)
         return self.llm.ask(prompt)
 
-    def ask_stream(self, question, web_search=False) -> Generator:
+    def ask_stream(self, question: str, web_search: bool = False) -> Generator:
+        """Streams the response from the RAG."""
         documents = self.retrieve(question)
         context = "\n".join(documents[0])
         prompt = self.prompt_template.format(
@@ -66,12 +68,21 @@ class SimpleRAG(RAG):
         return self.llm.ask_stream(prompt, web_search=web_search)
 
 
+# Example usage of HugChatLLM
 if __name__ == "__main__":
+    # Load configuration from YAML file
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
-    llm = LLM(False, True, "test")
-    rag = SimpleRAG(llm, config)
-    rag.load_collection("test4_collection")
 
+    # Initialize the Large Language Model (LLM)
+    llm = LLM(False, True, "test")
+
+    # Initialize the SimpleRAG instance with the LLM and configuration
+    rag = SimpleRAG(llm, config)
+
+    # Load the collection named "test4_collection"
+    rag.load_collection("test_collection")
+
+    # Ingest a batch of documents into the collection
     rag.ingest_batch(
         batch_size=16,
         doc_number=176288,
@@ -80,17 +91,25 @@ if __name__ == "__main__":
         api=False,
     )
 
+    # Print the count of documents in the collection
     print(rag.collection.count())
 
+    # Initialize variables to calculate the average length of documents
     total_length = 0
     num_documents = 0
+
+    # Get the documents and metadata from the collection
     dict = rag.collection.get(include=["embeddings", "documents", "metadatas"])
     documents = dict["documents"]
+
+    # Print an example document and its metadata
     print(documents[1])
     print(dict["metadatas"][1])
 
+    # Calculate the total length of all documents and the number of documents
     for document in documents:
         total_length += len(document)
         num_documents += 1
 
+    # Print the average length of documents in the collection
     print(total_length / num_documents)

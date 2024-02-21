@@ -87,6 +87,6 @@ if __name__ == "__main__":
     print("Response:", response)
 
     # Stream the response
-    print("Streaming response:")
-    for token in hugchat_llm.ask_stream(prompt):
-        print(token)
+    # print("Streaming response:")
+    # for token in hugchat_llm.ask_stream(prompt):
+    #     print(token)
