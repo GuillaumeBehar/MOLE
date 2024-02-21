@@ -11,8 +11,8 @@ sys.path.append(up(up(os.path.abspath(__file__))))
 
 from models.rag import *
 from utils.utils import load_yaml
-from metrics.pmcqa_evaluate import *
-from metrics.rouge import *
+from evaluation.pmcqa_evaluate import *
+from evaluation.rouge import *
 
 
 class MetadataRAG(RAG):
@@ -23,7 +23,7 @@ class MetadataRAG(RAG):
             model_name="all-MiniLM-L6-v2", device="cuda"
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1024, chunk_overlap=64
+            chunk_size=4096, chunk_overlap=64
         )
 
     def ingest(self, raw_documents: list[dict]) -> None:
@@ -39,11 +39,11 @@ class MetadataRAG(RAG):
         print("Text splitting time: ", time.time() - now)
         print("Number of chunk to ingest:", len(documents))
         print(
-            "Mean length of document to ingest:",
+            "Mean length of documents to ingest:",
             np.mean([len(document["text"]) for document in raw_documents]),
         )
         print(
-            "Mean length of chunk to ingest:",
+            "Mean length of chunks to ingest:",
             np.mean([len(doc.page_content) for doc in documents]),
         )
 
@@ -171,6 +171,7 @@ class MetadataRAG(RAG):
             prompt_building_function = self.build_prompt
         results = self.retrieve(question)
         prompt = prompt_building_function(question, results)
+        print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask(prompt)
 
@@ -178,11 +179,14 @@ class MetadataRAG(RAG):
         self,
         question: str,
         web_search: bool = False,
-        prompt_building_function=build_prompt,
+        prompt_building_function=None,
     ) -> Generator:
         """Streams the response from the RAG."""
+        if prompt_building_function is None:
+            prompt_building_function = self.build_prompt
         results = self.retrieve(question)
         prompt = prompt_building_function(question, results)
+        print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask_stream(prompt, web_search=web_search)
 
@@ -202,22 +206,24 @@ if __name__ == "__main__":
     rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
-    # rag.ingest_batch(
-    #     batch_size=16,
-    #     doc_number=10000,
-    #     data_getter=get_data,
-    #     doc_start=10500000,
-    #     api=False,
-    # )
-
-    # Ingest a list of documents into the collection
-    rag.ingest_list(
-        batch_size=16,
-        id_list=[10500024],
+    rag.ingest_batch(
+        batch_size=32,
+        doc_number=1000,
         data_getter=get_data,
+        doc_start=10500000,
         api=False,
     )
 
+    # Ingest a list of documents into the collection
+    # rag.ingest_list(
+    #     batch_size=16,
+    #     id_list=[10500024],
+    #     data_getter=get_data,
+    #     api=False,
+    # )
+
     # Print the count of documents in the collection
-    print("Number of chunk in the collection", rag.collection.count())
-    print("Mean length of chunk in the collection", rag.collection.mean_length())
+    print("Number of chunk in the collection:", rag.collection.count())
+
+    # Ask a question
+    question = "How drought stress increases the proline accumulations in seedling leaves in woody plant species ?"

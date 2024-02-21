@@ -54,6 +54,7 @@ class SimpleRAG(RAG):
         prompt = self.prompt_template.format(
             **{"context": context, "question": question}
         )
+        print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask(prompt)
 
@@ -64,6 +65,7 @@ class SimpleRAG(RAG):
         prompt = self.prompt_template.format(
             **{"context": context, "question": question}
         )
+        print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask_stream(prompt, web_search=web_search)
 
