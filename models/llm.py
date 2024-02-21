@@ -2,7 +2,7 @@ from typing import Generator
 
 
 class LLM:
-    def __init__(self, local: bool, loaded: bool, name: str) -> None:
+    def __init__(self, local: bool, loaded: bool, name: str|None) -> None:
         """Initialize the LLM class."""
         self.local = local
         self.loaded = loaded
