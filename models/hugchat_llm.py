@@ -56,7 +56,7 @@ class HugChatLLM(LLM):
         """Ask the LLM a question."""
         if not self.loaded:
             raise ValueError("Model not loaded. Please load the model first.")
-        return self.model.query(prompt, web_search=web_search)
+        return str(self.model.query(prompt, web_search=web_search))
 
     def ask_stream(self, prompt: str, web_search: bool = False) -> Generator:
         """Streams the response from the LLM."""

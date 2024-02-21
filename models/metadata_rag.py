@@ -10,6 +10,9 @@ sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
 
 from models.rag import *
+from utils.utils import load_yaml
+from metrics.pmcqa_evaluate import *
+from metrics.rouge import *
 
 
 class MetadataRAG(RAG):
@@ -26,18 +29,33 @@ class MetadataRAG(RAG):
     def ingest(self, raw_documents: list[dict]) -> None:
         """Ingest documents into the collection."""
 
+        import time
+
+        now = time.time()
         documents = self.text_splitter.create_documents(
             [document["text"] for document in raw_documents],
             metadatas=[document["metadata"] for document in raw_documents],
         )
+        print("Text splitting time: ", time.time() - now)
+        print("Number of chunk to ingest:", len(documents))
+        print(
+            "Mean length of document to ingest:",
+            np.mean([len(document["text"]) for document in raw_documents]),
+        )
+        print(
+            "Mean length of chunk to ingest:",
+            np.mean([len(doc.page_content) for doc in documents]),
+        )
 
         current_count = self.collection.count()
 
+        now = time.time()
         self.collection.add(
             documents=[document.page_content for document in documents],
             metadatas=[document.metadata for document in documents],
             ids=[str(k + current_count) for k in range(len(documents))],
         )
+        print("Ingestion time: ", time.time() - now)
 
     def retrieve(self, question: str) -> str:
         """Retrieves relevant context for the given question."""
@@ -186,37 +204,20 @@ if __name__ == "__main__":
     # Ingest a batch of documents into the collection
     # rag.ingest_batch(
     #     batch_size=16,
-    #     doc_number=16,
+    #     doc_number=10000,
     #     data_getter=get_data,
     #     doc_start=10500000,
     #     api=False,
     # )
 
-    # Print the count of documents in the collection
-    print(rag.collection.count())
-
-    # Initialize variables to calculate the average length of documents
-    total_length = 0
-    num_documents = 0
-
-    # Get the documents and metadata from the collection
-    dict = rag.collection.get(include=["embeddings", "documents", "metadatas"])
-    documents = dict["documents"]
-
-    # Print an example document and its metadata
-    print(documents[1])
-    print(dict["metadatas"][1])
-
-    # Calculate the total length of all documents and the number of documents
-    for document in documents:
-        total_length += len(document)
-        num_documents += 1
-
-    # Print the average length of documents in the collection
-    print(total_length / num_documents)
-
-    print(
-        rag.ask(
-            "What is the most common cause of death in the United States?",
-        )
+    # Ingest a list of documents into the collection
+    rag.ingest_list(
+        batch_size=16,
+        id_list=[10500024],
+        data_getter=get_data,
+        api=False,
     )
+
+    # Print the count of documents in the collection
+    print("Number of chunk in the collection", rag.collection.count())
+    print("Mean length of chunk in the collection", rag.collection.mean_length())

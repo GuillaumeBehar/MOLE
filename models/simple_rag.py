@@ -83,33 +83,22 @@ if __name__ == "__main__":
     rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
-    rag.ingest_batch(
+    # rag.ingest_batch(
+    #     batch_size=16,
+    #     doc_number=10000,
+    #     data_getter=get_data,
+    #     doc_start=10500000,
+    #     api=False,
+    # )
+
+    # Ingest a list of documents into the collection
+    rag.ingest_list(
         batch_size=16,
-        doc_number=176288,
+        id_list=[10500024],
         data_getter=get_data,
-        doc_start=10500000,
         api=False,
     )
 
     # Print the count of documents in the collection
-    print(rag.collection.count())
-
-    # Initialize variables to calculate the average length of documents
-    total_length = 0
-    num_documents = 0
-
-    # Get the documents and metadata from the collection
-    dict = rag.collection.get(include=["embeddings", "documents", "metadatas"])
-    documents = dict["documents"]
-
-    # Print an example document and its metadata
-    print(documents[1])
-    print(dict["metadatas"][1])
-
-    # Calculate the total length of all documents and the number of documents
-    for document in documents:
-        total_length += len(document)
-        num_documents += 1
-
-    # Print the average length of documents in the collection
-    print(total_length / num_documents)
+    print("Number of chunk in the collection", rag.collection.count())
+    print("Mean length of chunk in the collection", rag.collection.mean_length())

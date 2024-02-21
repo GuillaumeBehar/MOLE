@@ -1,5 +1,4 @@
 streamlit
-streamlit_chat
 sentence-transformers
 langchain
 pypdf
@@ -9,3 +8,6 @@ torch
 llama-cpp-python
 hugchat
 urllib3
+evaluate
+rouge-score
+sacremoses

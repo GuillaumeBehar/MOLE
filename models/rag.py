@@ -63,14 +63,43 @@ class RAG:
             print(
                 f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
             )
+            if len(raw_documents) > 0:
+                self.ingest(raw_documents)
+
+            index += batch_size
+            doc_gotten += batch_size
+
+    def ingest_list(
+        self,
+        batch_size: int,
+        id_list: list[int],
+        data_getter,
+        api: bool,
+    ) -> None:
+        """Ingest a batch of documents into the collection."""
+
+        import time
+
+        for ids in tqdm(group_list(id_list, batch_size), desc="Ingesting documents"):
+            now = time.time()
+            raw_documents = []
+            for id in ids:
+                try:
+                    document = data_getter(id, api)
+                    if document is not None:
+                        raw_documents.append(document)
+                except Exception as e:
+                    # print(f"Error retrieving document {index + k}: {e}")
+                    pass
+            print(
+                f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
+            )
             now = time.time()
             if len(raw_documents) > 0:
                 self.ingest(raw_documents)
                 print(
                     f"Ingested {len(raw_documents)} documents in {time.time() - now} seconds"
                 )
-            index += batch_size
-            doc_gotten += batch_size
 
     def retrieve(self, question: str) -> str:
         """Retrieve relevant documents from the collection."""
