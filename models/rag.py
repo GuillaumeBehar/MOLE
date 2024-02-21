@@ -41,7 +41,13 @@ class RAG:
         pass  # This method will be implemented in subclasses
 
     def ingest_batch(
-        self, batch_size: int, doc_number: int, data_getter, doc_start: int, api: bool
+        self,
+        batch_size: int,
+        doc_number: int,
+        doc_start: int,
+        data_getter,
+        api: bool,
+        show=False,
     ) -> None:
         """Ingest a batch of documents into the collection."""
         index = doc_start
@@ -60,11 +66,12 @@ class RAG:
                 except Exception as e:
                     # print(f"Error retrieving document {index + k}: {e}")
                     pass
-            print(
-                f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
-            )
+            if show:
+                print(
+                    f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
+                )
             if len(raw_documents) > 0:
-                self.ingest(raw_documents)
+                self.ingest(raw_documents, show=show)
 
             index += batch_size
             doc_gotten += batch_size
@@ -75,6 +82,7 @@ class RAG:
         id_list: list[int],
         data_getter,
         api: bool,
+        show=False,
     ) -> None:
         """Ingest a batch of documents into the collection."""
 
@@ -91,9 +99,10 @@ class RAG:
                 except Exception as e:
                     # print(f"Error retrieving document {index + k}: {e}")
                     pass
-            print(
-                f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
-            )
+            if show:
+                print(
+                    f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
+                )
             now = time.time()
             if len(raw_documents) > 0:
                 self.ingest(raw_documents)

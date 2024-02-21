@@ -62,7 +62,8 @@ def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
 
 
 if __name__ == "__main__":
-    # print(df.head(0))
+    display(EVALUATION_DATAFRAME.head(5))
+    EVALUATION_DATAFRAME.loc[0]
     # biogpt = Biogpt(True, False, name="jpp")
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
 

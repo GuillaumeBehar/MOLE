@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import urllib3
+import json
 
 import sys
 import os
@@ -172,7 +173,19 @@ def get_data(id: int, api: bool = False) -> None:
             raise Exception(f"PMC{id} not found")
 
 
+def pmid_to_pmcid(id: int):
+    try:
+        url = f"https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=my_tool&email=my_email@example.com&ids={id}&format=json"
+        http = urllib3.PoolManager()
+        response = http.request("GET", url)
+        json_dict = json.loads(response.data.decode("utf-8"))
+        print(json_dict["records"][0])
+        return json_dict["records"][0]["pmcid"].split("PMC")[1]
+    except:
+        raise Exception(f"PMID{id} not found")
+
+
 if __name__ == "__main__":
 
     for k in range(10):
-        print(get_data(10500000 + k, False))
+        print(pmid_to_pmcid(33193332 + k))

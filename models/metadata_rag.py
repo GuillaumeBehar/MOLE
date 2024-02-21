@@ -11,8 +11,7 @@ sys.path.append(up(up(os.path.abspath(__file__))))
 
 from models.rag import *
 from utils.utils import load_yaml
-from evaluation.pmcqa_evaluate import *
-from evaluation.rouge import *
+from evaluation.pmcqa_evaluate import EVALUATION_DATAFRAME
 
 
 class MetadataRAG(RAG):
@@ -26,7 +25,7 @@ class MetadataRAG(RAG):
             chunk_size=4096, chunk_overlap=64
         )
 
-    def ingest(self, raw_documents: list[dict]) -> None:
+    def ingest(self, raw_documents: list[dict], show=False) -> None:
         """Ingest documents into the collection."""
 
         import time
@@ -34,18 +33,21 @@ class MetadataRAG(RAG):
         now = time.time()
         documents = self.text_splitter.create_documents(
             [document["text"] for document in raw_documents],
-            metadatas=[document["metadata"] for document in raw_documents],
+            metadatas=[
+                {"id": document["metadata"]["id"]} for document in raw_documents
+            ],
         )
-        print("Text splitting time: ", time.time() - now)
-        print("Number of chunk to ingest:", len(documents))
-        print(
-            "Mean length of documents to ingest:",
-            np.mean([len(document["text"]) for document in raw_documents]),
-        )
-        print(
-            "Mean length of chunks to ingest:",
-            np.mean([len(doc.page_content) for doc in documents]),
-        )
+        if show:
+            print("Text splitting time: ", time.time() - now)
+            print("Number of chunk to ingest:", len(documents))
+            print(
+                "Mean length of documents to ingest:",
+                np.mean([len(document["text"]) for document in raw_documents]),
+            )
+            print(
+                "Mean length of chunks to ingest:",
+                np.mean([len(doc.page_content) for doc in documents]),
+            )
 
         current_count = self.collection.count()
 
@@ -55,14 +57,15 @@ class MetadataRAG(RAG):
             metadatas=[document.metadata for document in documents],
             ids=[str(k + current_count) for k in range(len(documents))],
         )
-        print("Ingestion time: ", time.time() - now)
+        if show:
+            print("Ingestion time: ", time.time() - now)
 
     def retrieve(self, question: str) -> str:
         """Retrieves relevant context for the given question."""
         results = self.collection.query(query_texts=[question], n_results=5)
         return results
 
-    def build_prompt(self, question: str, results: dict) -> str:
+    def build_prompt(self, question: str, results: dict, data_getter=get_data) -> str:
 
         self.prompt_template = PromptTemplate.from_template(
             """
@@ -85,9 +88,11 @@ class MetadataRAG(RAG):
         id_list = []
         metadata_list = []
         chunk_list = []
-        for metadata in results["metadatas"][0]:
-            if metadata["id"] not in id_list:
-                id_list.append(metadata["id"])
+        for metadata_id in results["metadatas"][0]:
+            id = metadata_id["id"]
+            if id not in id_list:
+                id_list.append(id)
+                metadata = data_getter(id, api=True)["metadata"]
                 metadata_list.append(metadata)
                 chunk_list += [[]]
                 for i in range(len(results["metadatas"][0])):
@@ -111,7 +116,7 @@ class MetadataRAG(RAG):
         )
         return prompt
 
-    def build_prompt_yes_no(self, question: str, results: dict) -> str:
+    def build_prompt_yes_no(self, question: str, results: dict, data_getter) -> str:
 
         self.prompt_template = PromptTemplate.from_template(
             """
@@ -134,9 +139,11 @@ class MetadataRAG(RAG):
         id_list = []
         metadata_list = []
         chunk_list = []
-        for metadata in results["metadatas"][0]:
-            if metadata["id"] not in id_list:
-                id_list.append(metadata["id"])
+        for metadata_id in results["metadatas"][0]:
+            id = metadata_id["id"]
+            if id not in id_list:
+                id_list.append(id)
+                metadata = data_getter(id, api=True)["metadata"]
                 metadata_list.append(metadata)
                 chunk_list += [[]]
                 for i in range(len(results["metadatas"][0])):
@@ -164,13 +171,10 @@ class MetadataRAG(RAG):
         self,
         question: str,
         web_search: bool = False,
-        prompt_building_function=None,
     ) -> str:
         """Ask the RAG a question."""
-        if prompt_building_function is None:
-            prompt_building_function = self.build_prompt
         results = self.retrieve(question)
-        prompt = prompt_building_function(question, results)
+        prompt = self.build_prompt(question, results, get_data)
         print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask(prompt)
@@ -179,13 +183,10 @@ class MetadataRAG(RAG):
         self,
         question: str,
         web_search: bool = False,
-        prompt_building_function=None,
     ) -> Generator:
         """Streams the response from the RAG."""
-        if prompt_building_function is None:
-            prompt_building_function = self.build_prompt
         results = self.retrieve(question)
-        prompt = prompt_building_function(question, results)
+        prompt = self.build_prompt(question, results, get_data)
         print("Length of prompt:", len(prompt))
         print(prompt)
         return self.llm.ask_stream(prompt, web_search=web_search)
@@ -197,7 +198,7 @@ if __name__ == "__main__":
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
 
     # Initialize the Large Language Model (LLM)
-    llm = HugChatLLM(config)
+    llm = LLM(True, True, "llm")
 
     # Initialize the SimpleRAG instance with the LLM and configuration
     rag = MetadataRAG(llm, config)
@@ -206,20 +207,22 @@ if __name__ == "__main__":
     rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
-    rag.ingest_batch(
-        batch_size=32,
-        doc_number=1000,
-        data_getter=get_data,
-        doc_start=10500000,
-        api=False,
-    )
+    # rag.ingest_batch(
+    #     batch_size=32,
+    #     doc_number=10000,
+    #     data_getter=get_data,
+    #     doc_start=10500000,
+    #     api=False,
+    #     show=False,
+    # )
 
     # Ingest a list of documents into the collection
     # rag.ingest_list(
-    #     batch_size=16,
-    #     id_list=[10500024],
+    #     batch_size=32,
+    #     id_list=EVALUATION_DATAFRAME["pubid"].tolist()[:1000],
     #     data_getter=get_data,
     #     api=False,
+    #     show=True,
     # )
 
     # Print the count of documents in the collection

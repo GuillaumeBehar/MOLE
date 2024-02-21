@@ -86,20 +86,22 @@ if __name__ == "__main__":
 
     # Ingest a batch of documents into the collection
     # rag.ingest_batch(
-    #     batch_size=16,
+    #     batch_size=32,
     #     doc_number=10000,
     #     data_getter=get_data,
     #     doc_start=10500000,
     #     api=False,
+    #     show=False,
     # )
 
     # Ingest a list of documents into the collection
-    rag.ingest_list(
-        batch_size=16,
-        id_list=[10500024],
-        data_getter=get_data,
-        api=False,
-    )
+    # rag.ingest_list(
+    #     batch_size=32,
+    #     id_list=EVALUATION_DATAFRAME["pubid"].tolist()[:1000],
+    #     data_getter=get_data,
+    #     api=False,
+    #     show=True,
+    # )
 
     # Print the count of documents in the collection
     print("Number of chunk in the collection", rag.collection.count())
