@@ -1,4 +1,3 @@
-import os
 from langchain_community.llms import LlamaCpp
 from typing import Generator
 from tqdm import tqdm

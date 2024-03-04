@@ -1,9 +1,7 @@
 import requests
 import pandas as pd
 import json
-from transformers import BioGptTokenizer, BioGptForCausalLM, set_seed
 
-from models.pre_trained_LLM import generate_from_biogpt
 from models.pre_trained_LLM import Biogpt
 from rouge import get_rouge_score
 
