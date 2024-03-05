@@ -24,10 +24,12 @@ class Biogpt(LLM):
                                  device_map="auto",
                                  )
 
-    def ask(self, list_of_input_text: str):
+    def ask(self, input_text: str):
+        begin_prompt = "Answer with yes or no. Question: "
+        end_prompt = " Answer: "
 
         sequences = self.pipeline(
-            list_of_input_text,
+            begin_prompt+input_text+end_prompt,
             max_new_tokens=100,
             return_full_text=False
         )
@@ -68,10 +70,8 @@ def generate_from_biogpt(list_of_input_text) -> str:
 
 if __name__ == "__main__":
     Bio = Biogpt(True, False, name='jpp')
-    begin_prompt = "Answer with yes or no. Question: "
     text = "Are group 2 innate lymphoid cells ( ILC2s ) increased in chronic rhinosinusitis with nasal polyps or eosinophilia?"
-    end_prompt = " Answer: "
-    output = Bio.generate_w_pipeline(begin_prompt+text+end_prompt)
+    output = Bio.ask(text)
     print(output)
     yesno_pipe = pipeline("text-classification")
     print(yesno_pipe(output))

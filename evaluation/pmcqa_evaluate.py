@@ -54,8 +54,6 @@ def get_instance(i: int) -> None:
 
 
 def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
-    begin_prompt = "Answer with yes or no. Question: "
-    end_prompt = " Answer: "
     generated = []
     targets = []
 
@@ -63,7 +61,7 @@ def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
         instance = EVALUATION_DATAFRAME.iloc[i]
         question = instance["question"]
         long_answer = [instance["long_answer"]]
-        generated_output = llm.ask(begin_prompt+question+end_prompt)
+        generated_output = llm.ask(question)
         generated.append(generated_output)
         targets.append(long_answer)
         if show:
@@ -77,13 +75,11 @@ def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
 
 
 def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
-    begin_prompt = "Answer by yes or no. Question: "
-    end_prompt = " Answer : "
     for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
         instance = EVALUATION_DATAFRAME.iloc[i]
         question = instance["question"]
         long_answer = [instance["final_decision"]]
-        output = llm.ask(begin_prompt+question+end_prompt)
+        output = llm.ask(question)
         if show:
             print(f"\nInstance {i + 1}:")
             print(f"Generated Answer: {output}")
@@ -97,5 +93,5 @@ if __name__ == "__main__":
     # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
     #
     # hugchat_llm = HugChatLLM(config)
-    scores = evaluate_long(llm=biogpt, n_instances=20, show=False)
+    scores = evaluate_long(llm=biogpt, n_instances=5, show=False)
     print(f'Average Scores: {scores}')
