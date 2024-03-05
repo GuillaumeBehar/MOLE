@@ -1,21 +1,28 @@
+from time import perf_counter
 import chromadb
 from typing import Generator
-import xml.etree.ElementTree as ET
 from tqdm import tqdm
 
-import sys
-import os
-from os.path import dirname as up
 
-sys.path.append(up(os.path.abspath(__file__)))
-sys.path.append(up(up(os.path.abspath(__file__))))
+def get_main_dir(depth: int = 0):  # nopep8
+    """Get the main directory of the project."""
+    import os
+    import sys
+    from os.path import dirname as up
+    main_dir = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(depth):
+        sys.path.append(up(main_dir))
+        main_dir = up(main_dir)
+    return main_dir
 
-from models.hugchat_llm import *
-from models.local_llm import *
-from utils.utils import *
+
+MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+
+
 from utils.lecture_xml import *
-
-MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
+from utils.custom_utils import *
+from models.local_gguf_llm import *
+from models.hugchat_llm import *
 
 
 class RAG:
@@ -40,75 +47,50 @@ class RAG:
         """Ingest documents into the collection."""
         pass  # This method will be implemented in subclasses
 
-    def ingest_batch(
-        self,
-        batch_size: int,
-        doc_number: int,
-        doc_start: int,
-        data_getter,
-        api: bool,
-        show=False,
-    ) -> None:
+    def ingest_batch(self,
+                     batch_size: int,
+                     doc_number: int,
+                     doc_start: int,
+                     data_getter, api: bool,
+                     show: bool = False) -> None:
         """Ingest a batch of documents into the collection."""
         index = doc_start
-        doc_gotten = 0
-
-        import time
 
         for _ in tqdm(range(doc_number // batch_size), desc="Ingesting documents"):
-            now = time.time()
-            raw_documents = []
-            for k in range(batch_size):
-                try:
-                    document = data_getter(index + k, api)
-                    if document is not None:
-                        raw_documents.append(document)
-                except Exception as e:
-                    # print(f"Error retrieving document {index + k}: {e}")
-                    pass
+            start_time = perf_counter()
+            raw_documents = [document for document in (data_getter(
+                index + k, api, show) for k in range(batch_size)) if document is not None]
             if show:
                 print(
-                    f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
-                )
-            if len(raw_documents) > 0:
-                self.ingest(raw_documents, show=show)
-
+                    f"Retrieved {len(raw_documents)} documents in {perf_counter() - start_time:.2f} seconds")
+            start_time = perf_counter()
+            if raw_documents:
+                self.ingest(raw_documents)
+                if show:
+                    print(
+                        f"Ingested {len(raw_documents)} documents in {perf_counter() - start_time:.2f} seconds")
             index += batch_size
-            doc_gotten += batch_size
 
-    def ingest_list(
-        self,
-        batch_size: int,
-        id_list: list[int],
-        data_getter,
-        api: bool,
-        show=False,
-    ) -> None:
+    def ingest_list(self,
+                    batch_size: int,
+                    id_list: list[int],
+                    data_getter, api: bool,
+                    show: bool = False) -> None:
         """Ingest a batch of documents into the collection."""
 
-        import time
-
         for ids in tqdm(group_list(id_list, batch_size), desc="Ingesting documents"):
-            now = time.time()
-            raw_documents = []
-            for id in ids:
-                try:
-                    document = data_getter(id, api)
-                    if document is not None:
-                        raw_documents.append(document)
-                except Exception as e:
-                    # print(f"Error retrieving document {index + k}: {e}")
-                    pass
+            start_time = perf_counter()
+            raw_documents = [document for document in (data_getter(
+                id, api, show) for id in ids) if document is not None]
             if show:
                 print(
-                    f"Retrieved {len(raw_documents)} documents in {time.time() - now} seconds"
-                )
-            now = time.time()
-            if len(raw_documents) > 0:
+                    f"Retrieved {len(raw_documents)} documents in {perf_counter() - start_time:.2f} seconds")
+            start_time = perf_counter()
+            if raw_documents:
                 self.ingest(raw_documents)
-                print(
-                    f"Ingested {len(raw_documents)} documents in {time.time() - now} seconds"
-                )
+                if show:
+                    print(
+                        f"Ingested {len(raw_documents)} documents in {perf_counter() - start_time:.2f} seconds")
 
     def retrieve(self, question: str) -> str:
         """Retrieve relevant documents from the collection."""

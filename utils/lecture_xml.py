@@ -52,7 +52,8 @@ def concatener_courtes(abstract_list):
         if len(abstract_list[i]) < 20:
             # Concaténer avec la chaîne suivante si elle existe
             if i + 1 < len(abstract_list):
-                nouvelle_liste.append(abstract_list[i] + " " + abstract_list[i + 1])
+                nouvelle_liste.append(
+                    abstract_list[i] + " " + abstract_list[i + 1])
                 i += 2  # Passer à l'élément suivant après la concaténation
             else:
                 nouvelle_liste.append(
@@ -60,7 +61,8 @@ def concatener_courtes(abstract_list):
                 )  # Ajouter la dernière chaîne si elle n'a pas de suivante
                 i += 1  # Passer à l'élément suivant
         else:
-            nouvelle_liste.append(abstract_list[i])  # Ajouter la chaîne telle quelle
+            # Ajouter la chaîne telle quelle
+            nouvelle_liste.append(abstract_list[i])
             i += 1  # Passer à l'élément suivant
 
     return nouvelle_liste
@@ -106,7 +108,7 @@ def recursive_get_text(element):
     return all_text
 
 
-def get_data(id: int, api: bool = False) -> None:
+def get_data(id: int, api: bool = False, show: bool = False) -> None:
     document = {"metadata": {"abstract": ""}, "text": ""}
 
     if api == True:
@@ -139,7 +141,8 @@ def get_data(id: int, api: bool = False) -> None:
             document["text"] = body_text.strip()
             return document
         except:
-            raise Exception(f"PMC{id} not found")
+            if show:
+                print(f"PMC{id} not found")
     else:
         try:
             xml_path = MAIN_DIR_PATH + f"./data/PMC{id}.xml"
@@ -170,7 +173,8 @@ def get_data(id: int, api: bool = False) -> None:
                                 document["text"] += text + " "
             return document
         except:
-            raise Exception(f"PMC{id} not found")
+            if show:
+                print(f"PMC{id} not found")
 
 
 def pmid_to_pmcid(id: int):

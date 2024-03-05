@@ -1,20 +1,28 @@
 import streamlit as st
 from PIL import Image
 
-import sys
-import os
-from os.path import dirname as up
 
-sys.path.append(up(os.path.abspath(__file__)))
+def get_main_dir(depth: int = 0):  # nopep8
+    """Get the main directory of the project."""
+    import os
+    import sys
+    from os.path import dirname as up
+    main_dir = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(depth):
+        sys.path.append(up(main_dir))
+        main_dir = up(main_dir)
+    return main_dir
 
-from models.hugchat_llm import *
-from models.local_llm import *
-from models.rag import *
+
+MAIN_DIR_PATH = get_main_dir(0)  # nopep8
+
+from models.hugchat_llm import HugChatLLM
+from models.local_gguf_llm import LocalGgufLLM
+from models.rag import RAG
 from models.simple_rag import SimpleRAG
 from models.metadata_rag import MetadataRAG
-from utils.utils import *
+from utils.custom_utils import get_filename, load_yaml, get_extensions_paths
 
-MAIN_DIR_PATH = up(os.path.abspath(__file__))
 
 st.set_page_config(page_title="MOLE", layout="wide")
 
@@ -26,38 +34,31 @@ def display_messages():
             st.session_state["container_message"].chat_message(user).write(msg)
         elif user == "assistant" and msg != "":
             if not stream:
-                st.session_state["container_message"].chat_message(user).write(msg)
+                st.session_state["container_message"].chat_message(
+                    user).write(msg)
             elif stream:
-                st.session_state["container_message"].chat_message(user).write_stream(
-                    msg
-                )
+                st.session_state["container_message"].chat_message(
+                    user).write_stream(msg)
     st.session_state["thinking_spinner"] = st.empty()
 
 
 def process_input():
-    if (
-        st.session_state["user_input"]
-        and len(st.session_state["user_input"].strip()) > 0
-    ):
+    if (st.session_state["user_input"] and len(st.session_state["user_input"].strip()) > 0):
         user_text = st.session_state["user_input"].strip()
         st.session_state["messages"].append((user_text, "user", False))
         if st.session_state["llm"] and st.session_state["llm"].loaded:
             with st.session_state["thinking_spinner"], st.spinner(f"Thinking"):
                 if st.session_state["toggle_rag"]:
-                    agent_text = st.session_state["rag"].ask_stream(
-                        user_text, web_search=st.session_state["toggle_web_search"]
-                    )
-                    stream = True
+                    agent_text, stream = st.session_state["rag"].ask_stream(
+                        user_text, web_search=st.session_state["toggle_web_search"]), True
                 else:
-                    agent_text = st.session_state["llm"].ask_stream(
-                        user_text, web_search=st.session_state["toggle_web_search"]
-                    )
-                    stream = True
-            st.session_state["messages"].append((agent_text, "assistant", stream))
+                    agent_text, stream = st.session_state["llm"].ask_stream(
+                        user_text, web_search=st.session_state["toggle_web_search"]), True
+            st.session_state["messages"].append(
+                (agent_text, "assistant", stream))
         else:
             st.session_state["messages"].append(
-                ("Please load a model first.", "assistant", False)
-            )
+                ("Please load a model first.", "assistant", False))
 
 
 def llm_loader():
@@ -69,42 +70,39 @@ def llm_loader():
         else:
             print("No model loaded")
         if st.session_state["toggle_local_llm"]:
-            if type(st.session_state["llm"]) != LocalLLM:
+            if type(st.session_state["llm"]) != LocalGgufLLM:
                 st.session_state["messages"] = []
-                st.session_state["llm"] = LocalLLM()
-
-            gguf_paths = get_gguf_paths(st.session_state["config"]["model_directory"])
-            st.selectbox(
-                "Select a LLM model",
-                gguf_paths,
-                format_func=get_filename,
-                key="selectbox_local_llm",
-                label_visibility="collapsed",
-            )
+                st.session_state["llm"] = LocalGgufLLM(
+                    st.session_state["config"])
+            gguf_paths = get_extensions_paths(
+                st.session_state["config"]["model_directory"], "gguf")
+            st.selectbox("Select a LLM model",
+                         gguf_paths,
+                         format_func=get_filename,
+                         key="selectbox_local_llm",
+                         label_visibility="collapsed")
             load_col, unload_col = st.columns((1, 3))
             load_col.button(label="Load", on_click=load_local_llm)
             unload_col.button(label="Unload", on_click=unload_local_llm)
-            if st.session_state["llm"].loaded and st.session_state[
-                "llm"
-            ].name == get_filename(st.session_state["selectbox_local_llm"]):
+            if st.session_state["llm"].loaded and st.session_state["llm"].name == get_filename(st.session_state["selectbox_local_llm"]):
                 st.write("LLM loaded \u2705")
             else:
                 st.session_state["load_model_spinner"] = st.empty()
 
         else:
-            if type(st.session_state["llm"]) == LocalLLM:
+            if type(st.session_state["llm"]) == LocalGgufLLM:
                 st.session_state["llm"].unload_model()
             if type(st.session_state["llm"]) != HugChatLLM:
                 st.session_state["messages"] = []
-                st.session_state["llm"] = HugChatLLM(st.session_state["config"])
-            st.selectbox(
-                "Select a LLM model",
-                st.session_state["llm"].available_models,
-                key="selectbox_hugchat_llm",
-                format_func=lambda k: k.displayName,
-                on_change=change_hugchat_llm,
-                label_visibility="collapsed",
-            )
+                st.session_state["llm"] = HugChatLLM(
+                    st.session_state["config"])
+                st.session_state["llm"].load_model(0)
+            st.selectbox("Select a LLM model",
+                         st.session_state["llm"].available_models,
+                         key="selectbox_hugchat_llm",
+                         format_func=lambda k: k.displayName,
+                         on_change=change_hugchat_llm,
+                         label_visibility="collapsed")
             if st.session_state["llm"].loaded:
                 st.write("LLM loaded \u2705")
             else:
@@ -132,8 +130,10 @@ def load_local_llm():
     st.session_state["messages"] = []
 
     gguf_path = st.session_state["selectbox_local_llm"]
+    gguf_paths = get_extensions_paths(
+        st.session_state["config"]["model_directory"], "gguf")
     with st.session_state["load_model_spinner"], st.spinner(f"Loading"):
-        st.session_state["llm"].load_model(gguf_path)
+        st.session_state["llm"].load_model(gguf_paths.index(gguf_path))
         print("Changed LLM to : ", st.session_state["llm"].name)
 
 
@@ -147,10 +147,7 @@ def change_hugchat_llm():
 
     available = st.session_state["llm"].available_models
     llm_number = available.index(st.session_state["selectbox_hugchat_llm"])
-    st.session_state["llm"].model.switch_llm(llm_number)
-    st.session_state["llm"].name = st.session_state[
-        "llm"
-    ].model.active_model.displayName
+    st.session_state["llm"].load_model(llm_number)
     print("Changed LLM to : ", st.session_state["llm"].name)
 
 

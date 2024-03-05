@@ -1,3 +1,8 @@
+from utils.custom_utils import load_yaml
+from models.hugchat_llm import HugChatLLM
+from models.llm import LLM
+from models.pre_trained_LLM import *
+from evaluation.rouge import get_rouge_score
 import requests
 import pandas as pd
 import json
@@ -8,11 +13,6 @@ from os.path import dirname as up
 
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
-from evaluation.rouge import get_rouge_score
-from models.pre_trained_LLM import *
-from models.llm import LLM
-from models.hugchat_llm import HugChatLLM
-from utils.utils import load_yaml
 
 MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
 
