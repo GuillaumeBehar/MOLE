@@ -75,4 +75,5 @@ if __name__ == "__main__":
 
     # Create an instance of HugChatLLM
     hugchat_llm = HugChatLLM(config)
+    hugchat_llm.load_model(0)
     print(evaluate_long(llm=hugchat_llm, n_instances=3, show=True))
