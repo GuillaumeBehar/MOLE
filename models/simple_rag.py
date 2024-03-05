@@ -1,15 +1,27 @@
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
+from typing import Generator
 
-import sys
-import os
-from os.path import dirname as up
 
-sys.path.append(up(os.path.abspath(__file__)))
-sys.path.append(up(up(os.path.abspath(__file__))))
+def get_main_dir(depth: int = 0):  # nopep8
+    """Get the main directory of the project."""
+    import os
+    import sys
+    from os.path import dirname as up
+    main_dir = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(depth):
+        sys.path.append(up(main_dir))
+        main_dir = up(main_dir)
+    return main_dir
 
-from models.rag import *
+
+MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+
+from models.rag import RAG
+from models.llm import LLM
+from utils.custom_utils import load_yaml
+from utils.lecture_xml import get_data
 
 
 class SimpleRAG(RAG):
@@ -85,14 +97,14 @@ if __name__ == "__main__":
     rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
-    # rag.ingest_batch(
-    #     batch_size=32,
-    #     doc_number=10000,
-    #     data_getter=get_data,
-    #     doc_start=10500000,
-    #     api=False,
-    #     show=False,
-    # )
+    rag.ingest_batch(
+        batch_size=4,
+        doc_start=10500000,
+        doc_number=10000,
+        data_getter=get_data,
+        api=False,
+        show=False,
+    )
 
     # Ingest a list of documents into the collection
     # rag.ingest_list(
