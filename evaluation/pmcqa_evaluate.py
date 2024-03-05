@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import json
+from datasets import load_metric
 
 
 import sys
@@ -12,8 +13,8 @@ sys.path.append(up(up(os.path.abspath(__file__))))
 from evaluation.rouge import get_rouge_score
 from models.pre_trained_LLM import *
 from models.llm import LLM
-from models.hugchat_llm import HugChatLLM
-from utils.utils import load_yaml
+# from models.hugchat_llm import HugChatLLM
+# from utils.utils import load_yaml
 
 MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
 
@@ -43,6 +44,7 @@ def get_instance(i: int) -> None:
 
 
 def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
+    metric = load_metric('glue', 'mrpc')
     generated = []
     targets = []
     for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
@@ -62,11 +64,25 @@ def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
     return res
 
 
+def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
+    begin_prompt = "Answer by yes or no. Question: "
+    end_prompt = " Answer : "
+    for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
+        instance = EVALUATION_DATAFRAME.iloc[i]
+        question = instance["question"]
+        long_answer = [instance["final_decision"]]
+        output = llm.ask(begin_prompt+question+end_prompt)
+        if show:
+            print(f"\nInstance {i + 1}:")
+            print(f"Generated Answer: {output}")
+            print(f"Expected Answer: {long_answer}")
+            print(get_rouge_score([output], [long_answer]))
+
+
 if __name__ == "__main__":
 
-    # biogpt = Biogpt(True, False, name="jpp")
-    config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
-
-    # Create an instance of HugChatLLM
-    hugchat_llm = HugChatLLM(config)
-    print(evaluate_long(llm=hugchat_llm, n_instances=3, show=True))
+    biogpt = Biogpt(True, False, name="jpp")
+    # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
+    #
+    # hugchat_llm = HugChatLLM(config)
+    evaluate_long(llm=biogpt, n_instances=3, show=True)
