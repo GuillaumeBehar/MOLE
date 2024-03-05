@@ -124,6 +124,9 @@ def rag_loader():
             st.session_state["messages"] = []
             del st.session_state["rag"]
             st.session_state["rag"] = None
+        if st.session_state["toggle_rag"]:
+            st.write("Number of documents:",
+                     st.session_state["rag"].collection.count())
 
 
 def load_local_llm():

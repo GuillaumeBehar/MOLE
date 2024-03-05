@@ -16,7 +16,7 @@ sys.path.append(up(up(os.path.abspath(__file__))))
 class MetadataRAG(RAG):
     def __init__(self, llm: LLM, config: dict) -> None:
         """Initialize the class with the provided large language model."""
-        super().__init__(llm=llm, config=config, name="SimpleRetrieveRAG")
+        super().__init__(llm=llm, config=config, name="MetadataRAG")
         self.embedding_function = SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2", device="cuda"
         )
