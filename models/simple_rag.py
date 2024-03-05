@@ -79,6 +79,7 @@ class SimpleRAG(RAG):
         )
         print("Length of prompt:", len(prompt))
         print(prompt)
+
         return self.llm.ask_stream(prompt, web_search=web_search)
 
 
@@ -100,10 +101,10 @@ if __name__ == "__main__":
     rag.ingest_batch(
         batch_size=4,
         doc_start=10500000,
-        doc_number=10000,
+        doc_number=1000,
         data_getter=get_data,
         api=False,
-        show=False,
+        show=True,
     )
 
     # Ingest a list of documents into the collection
@@ -117,4 +118,3 @@ if __name__ == "__main__":
 
     # Print the count of documents in the collection
     print("Number of chunk in the collection", rag.collection.count())
-    print("Mean length of chunk in the collection", rag.collection.mean_length())
