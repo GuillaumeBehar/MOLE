@@ -1,9 +1,11 @@
 import streamlit as st
 from PIL import Image
 
-
+import sys
 import os
 from os.path import dirname as up
+
+sys.path.append(up(os.path.abspath(__file__)))
 
 from models.hugchat_llm import *
 from models.local_llm import *
