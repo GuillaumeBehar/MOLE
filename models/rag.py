@@ -55,11 +55,17 @@ class RAG:
                      show: bool = False) -> None:
         """Ingest a batch of documents into the collection."""
         index = doc_start
+        doc_ingested = 0
 
         for _ in tqdm(range(doc_number // batch_size), desc="Ingesting documents"):
             start_time = perf_counter()
-            raw_documents = [document for document in (data_getter(
-                index + k, api, show) for k in range(batch_size)) if document is not None]
+            raw_documents = []
+            while len(raw_documents) != batch_size or doc_number <= doc_ingested:
+                document = data_getter(index, api, show)
+                index += 1
+                if document is not None:
+                    raw_documents.append(document)
+                    doc_ingested += 1
             if show:
                 print(
                     f"Retrieved {len(raw_documents)} documents in {perf_counter() - start_time:.2f} seconds")
