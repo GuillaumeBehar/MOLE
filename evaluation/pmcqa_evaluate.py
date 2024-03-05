@@ -5,7 +5,6 @@ from datasets import load_metric
 import random
 
 
-
 def get_main_dir(depth: int = 0):  # nopep8
     """Get the main directory of the project."""
     import os
@@ -26,7 +25,6 @@ MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 from models.pre_trained_LLM import *
 from evaluation.our_metrics import get_all_scores
 
-
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"
 
 
@@ -37,10 +35,11 @@ def query(api):
 
 url_parquet = query(API_URL)[0]
 EVALUATION_DATAFRAME = pd.read_parquet(url_parquet)
+EVALUATION_DATAFRAME.set_index('pubid', inplace=True)
 
 
-def get_pmid_list(json_name: str, n_instance: int) -> list:
-    pubid_list = EVALUATION_DATAFRAME["pubid"].tolist()
+def get_pmid_list(json_name: str, n_instance: int) -> list[int]:
+    pubid_list = EVALUATION_DATAFRAME.index.tolist()
     n_pubid_list = random.sample(pubid_list, n_instance)
     json_data = {"pubid_list": n_pubid_list}
     with open(json_name, "w") as json_file:
@@ -48,24 +47,23 @@ def get_pmid_list(json_name: str, n_instance: int) -> list:
     return n_pubid_list
 
 
-def get_instance(i: int) -> None:
-    row = EVALUATION_DATAFRAME.head(i)
-    return row.iloc[0]
+def get_instance_from_pubid(pubid: int) -> 'pd.core.series.Series':
+    row = EVALUATION_DATAFRAME.loc[pubid]
+    return row
 
 
-def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
+def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     generated = []
     targets = []
 
-    for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
-        instance = EVALUATION_DATAFRAME.iloc[i]
+    for id in id_instances_list:
+        instance = get_instance_from_pubid(id)
         question = instance["question"]
         long_answer = [instance["long_answer"]]
         generated_output = llm.ask(question)
         generated.append(generated_output)
         targets.append(long_answer)
         if show:
-            print(f"\nInstance {i + 1}:")
             print(f"Generated Answer: {generated_output}")
             print(f"Expected Answer: {long_answer[0]}")
             print(get_all_scores([generated_output], [long_answer]))
@@ -88,10 +86,10 @@ def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
 
 
 if __name__ == "__main__":
-
+    list_of_id = get_pmid_list('list.json', n_instance=3)
     biogpt = Biogpt(True, False, name="jpp")
     # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
     #
     # hugchat_llm = HugChatLLM(config)
-    scores = evaluate_long(llm=biogpt, n_instances=5, show=False)
+    scores = evaluate_long(llm=biogpt, id_instances_list=list_of_id, show=False)
     print(f'Average Scores: {scores}')
