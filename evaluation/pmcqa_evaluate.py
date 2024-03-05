@@ -7,6 +7,7 @@ import requests
 import pandas as pd
 import json
 
+
 import sys
 import os
 from os.path import dirname as up
@@ -62,8 +63,7 @@ def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
 
 
 if __name__ == "__main__":
-    display(EVALUATION_DATAFRAME.head(5))
-    EVALUATION_DATAFRAME.loc[0]
+
     # biogpt = Biogpt(True, False, name="jpp")
     config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
 

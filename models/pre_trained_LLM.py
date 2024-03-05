@@ -18,16 +18,17 @@ class Biogpt(LLM):
         self.model = BioGptForCausalLM.from_pretrained("microsoft/biogpt")
 
     def ask(self, sentence: str, web_search: bool = False) -> str:
+        self.model.eval()
         inputs = self.tokenizer(sentence, return_tensors="pt")
 
         with torch.no_grad():
-            beam_output = self.model.generate(
-                **inputs,
-                min_length=100,
-                max_length=256,
-                num_beams=5,
-                early_stopping=True
-            )
+            beam_output = self.model.generate(**inputs,
+                                              min_length=100,
+                                              max_length=256,
+                                              num_beams=5,
+                                              early_stopping=True
+                                              )
+
 
         # Move result back to CPU before decoding
         result = self.tokenizer.decode(beam_output[0], skip_special_tokens=True)
@@ -54,9 +55,13 @@ def generate_from_biogpt(
 
 if __name__ == "__main__":
 
-    Bio = Biogpt(True, False, name="jpp")
+    # Bio = Biogpt(True, False, name='jpp')
+
 
     # set_seed(42)
     text = "COVID-19 is"
-    output = Bio.ask(text)
+    # output = Bio.ask(text)
+    tokenizer = BioGptTokenizer.from_pretrained("microsoft/biogpt")
+    model = BioGptForCausalLM.from_pretrained("microsoft/biogpt")
+    output = generate_from_biogpt(text, tokenizer, model)
     print(output)
