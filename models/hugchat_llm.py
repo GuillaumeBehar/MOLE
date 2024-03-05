@@ -18,8 +18,8 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 
-from llm import LLM
-from utils.utils import load_yaml
+from models.llm import LLM
+from utils.custom_utils import load_yaml
 
 
 class HugChatLLM(LLM):

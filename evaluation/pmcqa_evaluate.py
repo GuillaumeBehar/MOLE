@@ -4,19 +4,25 @@ import json
 from datasets import load_metric
 
 
-import sys
-import os
-from os.path import dirname as up
+def get_main_dir(depth: int = 0):  # nopep8
+    """Get the main directory of the project."""
+    import os
+    import sys
+    from os.path import dirname as up
+    main_dir = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(depth):
+        sys.path.append(up(main_dir))
+        main_dir = up(main_dir)
+    return main_dir
 
-sys.path.append(up(os.path.abspath(__file__)))
-sys.path.append(up(up(os.path.abspath(__file__))))
-from evaluation.rouge import get_rouge_score
-from models.pre_trained_LLM import *
+
+MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+
+from utils.custom_utils import load_yaml
+from models.hugchat_llm import HugChatLLM
 from models.llm import LLM
-# from models.hugchat_llm import HugChatLLM
-# from utils.utils import load_yaml
-
-MAIN_DIR_PATH = up(up(os.path.abspath(__file__)))
+from models.pre_trained_LLM import *
+from evaluation.rouge import get_rouge_score
 
 
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"

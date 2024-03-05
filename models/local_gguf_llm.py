@@ -17,7 +17,7 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 
-from utils.utils import get_filename, load_yaml, get_extensions_paths
+from utils.custom_utils import get_filename, load_yaml, get_extensions_paths
 from models.llm import LLM
 
 
@@ -34,6 +34,7 @@ class LocalGgufLLM(LLM):
     def load_model(self, model_id: int, nb_layer_offload: int = -1) -> None:
         """Loads the LlamaCpp model with the given model path."""
         try:
+            self.unload_model()
             model_path = self.gguf_paths[model_id]
             self.model = LlamaCpp(model_path=model_path,
                                   n_gpu_layers=nb_layer_offload)

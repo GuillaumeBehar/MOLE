@@ -1,3 +1,6 @@
+from evaluation.pmcqa_evaluate import EVALUATION_DATAFRAME
+from utils.custom_utils import load_yaml
+from models.rag import *
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
@@ -8,10 +11,6 @@ from os.path import dirname as up
 
 sys.path.append(up(os.path.abspath(__file__)))
 sys.path.append(up(up(os.path.abspath(__file__))))
-
-from models.rag import *
-from utils.utils import load_yaml
-from evaluation.pmcqa_evaluate import EVALUATION_DATAFRAME
 
 
 class MetadataRAG(RAG):
@@ -207,14 +206,14 @@ if __name__ == "__main__":
     rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
-    # rag.ingest_batch(
-    #     batch_size=32,
-    #     doc_number=10000,
-    #     data_getter=get_data,
-    #     doc_start=10500000,
-    #     api=False,
-    #     show=False,
-    # )
+    rag.ingest_batch(
+        batch_size=32,
+        doc_number=10000,
+        data_getter=get_data,
+        doc_start=10500000,
+        api=False,
+        show=False,
+    )
 
     # Ingest a list of documents into the collection
     # rag.ingest_list(
