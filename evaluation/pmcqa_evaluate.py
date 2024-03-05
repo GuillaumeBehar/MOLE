@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 import json
 from datasets import load_metric
+import random
+
 
 
 def get_main_dir(depth: int = 0):  # nopep8
@@ -18,11 +20,11 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 
-from utils.custom_utils import load_yaml
-from models.hugchat_llm import HugChatLLM
-from models.llm import LLM
+# from utils.custom_utils import load_yaml
+# from models.hugchat_llm import HugChatLLM
+# from models.llm import LLM
 from models.pre_trained_LLM import *
-from evaluation.rouge import get_rouge_score
+from evaluation.our_metrics import get_all_scores
 
 
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"
@@ -37,11 +39,13 @@ url_parquet = query(API_URL)[0]
 EVALUATION_DATAFRAME = pd.read_parquet(url_parquet)
 
 
-def get_pmid_list(json_name: str) -> None:
+def get_pmid_list(json_name: str, n_instance: int) -> list:
     pubid_list = EVALUATION_DATAFRAME["pubid"].tolist()
-    json_data = {"pubid_list": pubid_list}
+    n_pubid_list = random.sample(pubid_list, n_instance)
+    json_data = {"pubid_list": n_pubid_list}
     with open(json_name, "w") as json_file:
         json.dump(json_data, json_file)
+    return n_pubid_list
 
 
 def get_instance(i: int) -> None:
@@ -50,24 +54,26 @@ def get_instance(i: int) -> None:
 
 
 def evaluate_long(llm: LLM, n_instances: int, show: bool) -> str | dict:
-    metric = load_metric('glue', 'mrpc')
+    begin_prompt = "Answer with yes or no. Question: "
+    end_prompt = " Answer: "
     generated = []
     targets = []
+
     for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
         instance = EVALUATION_DATAFRAME.iloc[i]
         question = instance["question"]
         long_answer = [instance["long_answer"]]
-        output = llm.ask(question)
-        generated.append(output)
+        generated_output = llm.ask(begin_prompt+question+end_prompt)
+        generated.append(generated_output)
         targets.append(long_answer)
         if show:
             print(f"\nInstance {i + 1}:")
-            print(f"Generated Answer: {output}")
-            print(f"Expected Answer: {long_answer}")
-            print(get_rouge_score([output], [long_answer]))
+            print(f"Generated Answer: {generated_output}")
+            print(f"Expected Answer: {long_answer[0]}")
+            print(get_all_scores([generated_output], [long_answer]))
 
-    res = get_rouge_score(predictions=generated, targets=targets)
-    return res
+    results = get_all_scores(predictions=generated, targets=targets)
+    return results
 
 
 def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
@@ -81,8 +87,8 @@ def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
         if show:
             print(f"\nInstance {i + 1}:")
             print(f"Generated Answer: {output}")
-            print(f"Expected Answer: {long_answer}")
-            print(get_rouge_score([output], [long_answer]))
+            print(f"Expected Answer: {long_answer[0]}")
+            print(get_all_scores([output], [long_answer]))
 
 
 if __name__ == "__main__":
@@ -91,4 +97,5 @@ if __name__ == "__main__":
     # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
     #
     # hugchat_llm = HugChatLLM(config)
-    evaluate_long(llm=biogpt, n_instances=3, show=True)
+    scores = evaluate_long(llm=biogpt, n_instances=20, show=False)
+    print(f'Average Scores: {scores}')
