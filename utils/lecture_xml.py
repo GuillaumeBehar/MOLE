@@ -186,7 +186,7 @@ def pmid_to_pmcid(id: int):
         print(json_dict["records"][0])
         return json_dict["records"][0]["pmcid"].split("PMC")[1]
     except:
-        raise Exception(f"PMID{id} not found")
+        return(f"PMID{id} not found")
 
 
 if __name__ == "__main__":
