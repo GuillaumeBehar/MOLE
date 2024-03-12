@@ -139,10 +139,13 @@ def get_data(id: int, api: bool = False, show: bool = False) -> None:
             body = root.findall(".//" + namespace + "body")
             body_text = " ".join([recursive_get_text(b) for b in body])
             document["text"] = body_text.strip()
-            return document
+            if show:
+                print("Retrieved PMC" + str(id))
+                return document
         except:
             if show:
                 print(f"PMC{id} not found")
+            return None
     else:
         try:
             xml_path = MAIN_DIR_PATH + f"./data/PMC{id}.xml"
@@ -171,10 +174,13 @@ def get_data(id: int, api: bool = False, show: bool = False) -> None:
                                 document["metadata"]["title"] = text
                             else:
                                 document["text"] += text + " "
+            if show:
+                print("Retrieved PMC" + str(id))
             return document
         except:
             if show:
                 print(f"PMC{id} not found")
+            return None
 
 
 def pmid_to_pmcid(id: int):
@@ -186,7 +192,7 @@ def pmid_to_pmcid(id: int):
         print(json_dict["records"][0])
         return json_dict["records"][0]["pmcid"].split("PMC")[1]
     except:
-        return(f"PMID{id} not found")
+        return (f"PMID{id} not found")
 
 
 if __name__ == "__main__":
