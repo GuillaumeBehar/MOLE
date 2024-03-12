@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from datasets import load_metric
 import random
+from tqdm import tqdm
 
 
 def get_main_dir(depth: int = 0):  # nopep8
@@ -56,7 +57,7 @@ def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     generated = []
     targets = []
 
-    for id in id_instances_list:
+    for id in tqdm(id_instances_list):
         instance = get_instance_from_pubid(id)
         question = instance["question"]
         long_answer = [instance["long_answer"]]
@@ -91,5 +92,6 @@ if __name__ == "__main__":
     # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
     #
     # hugchat_llm = HugChatLLM(config)
-    scores = evaluate_long(llm=biogpt, id_instances_list=list_of_id, show=False)
+    scores = evaluate_long(
+        llm=biogpt, id_instances_list=list_of_id, show=False)
     print(f'Average Scores: {scores}')

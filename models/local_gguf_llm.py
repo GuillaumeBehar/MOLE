@@ -37,7 +37,9 @@ class LocalGgufLLM(LLM):
             self.unload_model()
             model_path = self.gguf_paths[model_id]
             self.model = LlamaCpp(model_path=model_path,
-                                  n_gpu_layers=nb_layer_offload)
+                                  n_gpu_layers=nb_layer_offload,
+                                  n_ctx=8192,
+                                  )
             self.name = get_filename(model_path)
             self.loaded = True
         except Exception as e:

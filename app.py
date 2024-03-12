@@ -125,7 +125,7 @@ def rag_loader():
             del st.session_state["rag"]
             st.session_state["rag"] = None
         if st.session_state["toggle_rag"]:
-            st.write("Number of documents:",
+            st.write("Number of chunks:",
                      st.session_state["rag"].collection.count())
 
 

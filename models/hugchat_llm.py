@@ -2,6 +2,7 @@ from hugchat import hugchat
 from hugchat.login import Login
 import numpy as np
 from typing import Generator
+import time
 
 
 def get_main_dir(depth: int = 0):  # nopep8
@@ -62,12 +63,23 @@ class HugChatLLM(LLM):
 
     def ask(self, prompt: str, web_search: bool = False, new_conv: bool = True) -> str:
         """Ask the LLM a question."""
+        if not self.loaded:
+            raise ValueError("Model not loaded. Please load the model first.")
         if new_conv:
             id = self.model.new_conversation()
             self.model.change_conversation(id)
-        if not self.loaded:
-            raise ValueError("Model not loaded. Please load the model first.")
-        return str(self.model.query(prompt, web_search=web_search))
+        attempt = 0
+        while attempt < 5:
+            try:
+                response = self.ask(self.model.query(
+                    prompt, web_search=web_search))
+                attempt = 5
+            except Exception as e:
+                attempt += 1
+                print("Error asking question: %s", repr(e))
+                print("Waiting 1 minutes before retrying.")
+                time.sleep(60)
+        return str(response)
 
     def ask_stream(self, prompt: str, web_search: bool = False, new_conv: bool = True) -> Generator:
         """Streams the response from the LLM."""

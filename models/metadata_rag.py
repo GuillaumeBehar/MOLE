@@ -1,16 +1,28 @@
-from evaluation.pmcqa_evaluate import EVALUATION_DATAFRAME
-from utils.custom_utils import load_yaml
-from models.rag import *
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
+from typing import Generator
+import numpy as np
 
-import sys
-import os
-from os.path import dirname as up
 
-sys.path.append(up(os.path.abspath(__file__)))
-sys.path.append(up(up(os.path.abspath(__file__))))
+def get_main_dir(depth: int = 0):  # nopep8
+    """Get the main directory of the project."""
+    import os
+    import sys
+    from os.path import dirname as up
+    main_dir = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(depth):
+        sys.path.append(up(main_dir))
+        main_dir = up(main_dir)
+    return main_dir
+
+
+MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+
+from models.rag import RAG
+from models.llm import LLM
+from utils.custom_utils import load_yaml
+from utils.lecture_xml import get_data
 
 
 class MetadataRAG(RAG):
@@ -21,7 +33,7 @@ class MetadataRAG(RAG):
             model_name="all-MiniLM-L6-v2", device="cuda"
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=4096, chunk_overlap=64
+            chunk_size=1024, chunk_overlap=64
         )
 
     def ingest(self, raw_documents: list[dict], show=False) -> None:
@@ -89,9 +101,10 @@ class MetadataRAG(RAG):
         chunk_list = []
         for metadata_id in results["metadatas"][0]:
             id = metadata_id["id"]
+            metadata = results["metadatas"]
+            print(metadata)
             if id not in id_list:
                 id_list.append(id)
-                metadata = data_getter(id, api=True)["metadata"]
                 metadata_list.append(metadata)
                 chunk_list += [[]]
                 for i in range(len(results["metadatas"][0])):
@@ -140,9 +153,9 @@ class MetadataRAG(RAG):
         chunk_list = []
         for metadata_id in results["metadatas"][0]:
             id = metadata_id["id"]
+            metadata = results["metadatas"]
             if id not in id_list:
                 id_list.append(id)
-                metadata = data_getter(id, api=True)["metadata"]
                 metadata_list.append(metadata)
                 chunk_list += [[]]
                 for i in range(len(results["metadatas"][0])):
@@ -174,8 +187,6 @@ class MetadataRAG(RAG):
         """Ask the RAG a question."""
         results = self.retrieve(question)
         prompt = self.build_prompt(question, results, get_data)
-        print("Length of prompt:", len(prompt))
-        print(prompt)
         return self.llm.ask(prompt)
 
     def ask_stream(
@@ -185,9 +196,8 @@ class MetadataRAG(RAG):
     ) -> Generator:
         """Streams the response from the RAG."""
         results = self.retrieve(question)
+        print(len(results["documents"][0]))
         prompt = self.build_prompt(question, results, get_data)
-        print("Length of prompt:", len(prompt))
-        print(prompt)
         return self.llm.ask_stream(prompt, web_search=web_search)
 
 
@@ -203,12 +213,12 @@ if __name__ == "__main__":
     rag = MetadataRAG(llm, config)
 
     # Load the collection named "test4_collection"
-    rag.load_collection("test_collection")
+    rag.load_collection("test2_collection")
 
     # Ingest a batch of documents into the collection
     rag.ingest_batch(
-        batch_size=32,
-        doc_number=10000,
+        batch_size=8,
+        doc_number=950,
         data_getter=get_data,
         doc_start=10500000,
         api=False,
@@ -218,7 +228,7 @@ if __name__ == "__main__":
     # Ingest a list of documents into the collection
     # rag.ingest_list(
     #     batch_size=32,
-    #     id_list=EVALUATION_DATAFRAME["pubid"].tolist()[:1000],
+    #     id_list=[10500064],
     #     data_getter=get_data,
     #     api=False,
     #     show=True,
