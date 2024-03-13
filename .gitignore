@@ -13,4 +13,4 @@ collections/*
 !data/PMC10500007.xml
 !data/PMC10500008.xml
 !data/PMC10500009.xml
-/evaluation/test_dataset.py
+evaluation/test_dataset.py
