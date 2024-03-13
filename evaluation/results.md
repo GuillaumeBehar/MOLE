@@ -1,8 +1,8 @@
-## Les collections
+# Les collections
 
 #### Collection 256_1000
-- Nombre de chunk: 
-- Temps d'ingest: 6:
+- Nombre de chunk: 199116
+- Temps d'ingest: 9:00
 - La collection contient les documents spécifiés par Q&A pour répondre aux questions
 #### Collection 256_950
 - Nombre de chunk: 191366
@@ -28,9 +28,9 @@
 - La collection ne contient pas les documents spécifiés par Q&A pour répondre aux questions
   
 ---
-## Les résultats
+# Les résultats
 
-### Les LLM seuls
+## Les LLM seuls
 
 #### Test 1: 
 Modèle: mistral-7b-instruct-v0.2.Q8_0 en GGUF local
@@ -52,12 +52,14 @@ Scores:
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.1364  | 0.0437  | 0.1037  | 0.0143 | 0.0251               | 0.4811        | 0.6347     | 0.5458 |
 
-### Les RAG
+## Les RAG
+
+### Ne contient pas les documents spécifiés par Q&A
 
 #### Test 3: 
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
-Collection: 950_256
+Collection: 256_950
 Temps d'inférence: 1:25
 Scores:
 
@@ -68,10 +70,34 @@ Scores:
 #### Test 4: 
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
-Collection: 950_512
+Collection: 512_950
 Temps d'inférence: 1:28
 Scores:
 
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.2363  | 0.0632  | 0.1598  | 0.0335 | 0.0696               | 0.5235        | 0.5878     | 0.5525 |
+
+#### Test 5: 
+Modèle: SimpleRAG avec gemma-7b-it de Groq
+Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
+Collection: 768_950
+Temps d'inférence: 1:33
+Scores:
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.2308  | 0.0617  | 0.1625  | 0.0308 | 0.0622               | 0.5166        | 0.5861     | 0.5476 |
+
+### Contient les documents spécifiés par Q&A
+
+#### Test 6: 
+Modèle: SimpleRAG avec gemma-7b-it de Groq
+Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
+Collection: 256_1000
+Temps d'inférence: /
+Scores:
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.3132  | 0.1228  | 0.2261  | 0.0668 | 0.0973               | 0.5883        | 0.6722     | 0.6257 |

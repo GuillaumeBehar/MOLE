@@ -175,8 +175,8 @@ if __name__ == "__main__":
             print(
                 f"Number of chunk in the collection {chunk_size}_{doc_count}:", rag.collection.count())
 
-    doc_count = 950
-    chunk_size = 512
+    doc_count = 1000
+    chunk_size = 256
     rag.load_collection(f"{chunk_size}_{doc_count}")
     print("Number of chunk in the collection:", rag.collection.count())
     llm.load_model(model_id)
