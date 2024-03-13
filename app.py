@@ -22,6 +22,7 @@ from models.rag import RAG
 from models.simple_rag import SimpleRAG
 from models.metadata_rag import MetadataRAG
 from utils.custom_utils import get_filename, load_yaml, get_extensions_paths
+from evaluation.test_dataset import questions, answers
 
 
 st.set_page_config(page_title="MOLE", layout="wide")
@@ -139,7 +140,7 @@ def rag_loader():
             st.session_state["rag"] = MetadataRAG(
                 st.session_state["llm"], st.session_state["config"]
             )
-            st.session_state["rag"].load_collection("test_collection")
+            st.session_state["rag"].load_collection("256_1000")
         elif not st.session_state["toggle_rag"] and st.session_state["rag"] is not None:
             st.session_state["messages"] = []
             del st.session_state["rag"]
@@ -172,7 +173,15 @@ def change_groq_llm():
     print("Changed LLM to : ", st.session_state["llm"].name)
 
 
-def page():
+def display_questions(questions, answers):
+    st.write("# Questions and Answers")
+    for i, (question, answer) in enumerate(zip(questions, answers)):
+        st.write(f"## Question {i+1}: {question}")
+        st.write(f"Correct Answer: {answer}")
+        st.write("---")
+
+
+def page_chat():
     if len(st.session_state) == 0:
         st.session_state["messages"] = []
         st.session_state["llm"] = None
@@ -192,5 +201,27 @@ def page():
     st.chat_input("Message", key="user_input", on_submit=process_input)
 
 
+def page_questions():
+
+    st.header("MOLE")
+
+    st.write("### Questions and Answers")
+
+    for i, (question, answer) in enumerate(zip(questions, answers)):
+        st.write(f"Question {i+1}: {question}")
+        st.write(f"Correct Answer: {answer}")
+        st.write("---")
+
+
+def main():
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Chat", "Questions"])
+
+    if page == "Chat":
+        page_chat()
+    elif page == "Questions":
+        page_questions()
+
+
 if __name__ == "__main__":
-    page()
+    main()
