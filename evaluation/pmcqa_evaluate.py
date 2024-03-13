@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 import json
-from datasets import load_metric
 import random
 from tqdm import tqdm
 
@@ -24,7 +23,7 @@ MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 # from models.hugchat_llm import HugChatLLM
 # from models.llm import LLM
 from models.pre_trained_LLM import *
-from evaluation.our_metrics import get_all_scores
+from evaluation.our_metrics import get_all_scores, get_rouge_score
 
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"
 
@@ -78,12 +77,14 @@ def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
         instance = EVALUATION_DATAFRAME.iloc[i]
         question = instance["question"]
         long_answer = [instance["final_decision"]]
-        output = llm.ask(question)
+        generated_answer = llm.ask(question)
         if show:
             print(f"\nInstance {i + 1}:")
-            print(f"Generated Answer: {output}")
+            print(f"Generated Answer: {generated_answer}")
             print(f"Expected Answer: {long_answer[0]}")
-            print(get_all_scores([output], [long_answer]))
+            print(get_rouge_score([generated_answer], [long_answer]))
+
+
 
 
 if __name__ == "__main__":
