@@ -108,8 +108,10 @@ def recursive_get_text(element):
     return all_text
 
 
-def get_data(id: int, api: bool = False, show: bool = False) -> None:
-    document = {"metadata": {"abstract": ""}, "text": ""}
+def get_data(id: int, api: bool = True, show: bool = False) -> None:
+    document = {"metadata": {"abstract": "",
+                             "title": "",
+                             "id": -1}, "text": ""}
 
     if api == True:
         try:
@@ -139,6 +141,10 @@ def get_data(id: int, api: bool = False, show: bool = False) -> None:
             body = root.findall(".//" + namespace + "body")
             body_text = " ".join([recursive_get_text(b) for b in body])
             document["text"] = body_text.strip()
+
+            if document["metadata"]["abstract"] == "" or document["metadata"]["title"] == "" or document["text"] == "":
+                raise Exception("Empty content")
+
             if show:
                 print("Retrieved PMC" + str(id))
                 return document
@@ -198,5 +204,6 @@ def pmid_to_pmcid(id: int):
 
 if __name__ == "__main__":
 
-    for k in range(10):
-        print(pmid_to_pmcid(33193332 + k))
+    id = pmid_to_pmcid(22417809)
+    print(id)
+    print(get_data(id, api=True, show=True))
