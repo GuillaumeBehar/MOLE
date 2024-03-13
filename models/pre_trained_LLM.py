@@ -16,17 +16,19 @@ class Biogpt(LLM):
     def __init__(self, local: bool, loaded: bool, name: str):
         super().__init__(local=True, loaded=False, name=None)
         self.tokenizer = AutoTokenizer.from_pretrained("microsoft/biogpt")
-        self.model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt")
+        self.model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt").to(torch.device("cuda"))
         self.pipeline = pipeline("text-generation",
                                  model=self.model,
                                  tokenizer=self.tokenizer,
                                  torch_dtype=torch.bfloat16,
-                                 device_map="auto",
+                                 device_map="cuda",
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Question: "
-        end_prompt = " Answer: "
+        begin_prompt = "Context: "
+        end_prompt = ("Question: Which of the following answers is the most relevant ? "
+                      "Option: Yes; No"
+                      "Answer:")
 
         sequences = self.pipeline(
             begin_prompt+input_text+end_prompt,
@@ -34,6 +36,10 @@ class Biogpt(LLM):
             return_full_text=False
         )
         return sequences[0]['generated_text']
+
+    def to(self, device: torch.device) -> None:
+        self.model = self.model.to(device)
+
 
     # def ask(self, sentence: str, web_search: bool = False) -> str:
     #     self.model.eval()
@@ -83,7 +89,8 @@ def analyse_neg(texte):
 
 if __name__ == "__main__":
     Bio = Biogpt(True, False, name='jpp')
-    text = "Does vagus nerve contribute to the development of steatohepatitis and obesity in phosphatidylethanolamine N-methyltransferase deficient mice?"
+    text = ("Does vagus nerve contribute to the development of steatohepatitis and obesity in phosphatidylethanolamine "
+            "N-methyltransferase deficient mice?")
     output = Bio.ask(text)
     print(output)
     yesno_pipe = pipeline("text-classification")
