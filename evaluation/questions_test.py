@@ -68,4 +68,5 @@ id_test_pmc = ['5238935', '3446379', '4647573', '3637408', '4258008', '10282314'
 
 id_test_pmc = [int(num) for num in id_test_pmc]
 for i in range(3):
+    print(id_test_pmc[i])
     print(get_data(id_test_pmc[i], True))
