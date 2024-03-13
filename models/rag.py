@@ -60,7 +60,7 @@ class RAG:
         for _ in tqdm(range(doc_number // batch_size), desc="Ingesting documents"):
             start_time = perf_counter()
             raw_documents = []
-            while len(raw_documents) != batch_size or doc_number <= doc_ingested:
+            while len(raw_documents) < batch_size and doc_ingested < doc_number:
                 document = data_getter(index, api, show)
                 index += 1
                 if document is not None:

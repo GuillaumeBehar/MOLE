@@ -71,15 +71,14 @@ class HugChatLLM(LLM):
         attempt = 0
         while attempt < 5:
             try:
-                response = self.ask(self.model.query(
-                    prompt, web_search=web_search))
+                response = str(self.model.query(prompt, web_search=web_search))
                 attempt = 5
             except Exception as e:
                 attempt += 1
                 print("Error asking question: %s", repr(e))
                 print("Waiting 1 minutes before retrying.")
                 time.sleep(60)
-        return str(response)
+        return response
 
     def ask_stream(self, prompt: str, web_search: bool = False, new_conv: bool = True) -> Generator:
         """Streams the response from the LLM."""
