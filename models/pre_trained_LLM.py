@@ -25,7 +25,7 @@ class Biogpt(LLM):
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Answer with yes or no. Question: "
+        begin_prompt = "Yes | No Question: "
         end_prompt = " Answer: "
 
         sequences = self.pipeline(
