@@ -41,12 +41,12 @@ class MetadataRAG(RAG):
 
         import time
 
+        print("Ingesting documents...")
         now = time.time()
         documents = self.text_splitter.create_documents(
             [document["text"] for document in raw_documents],
-            metadatas=[
-                {"id": document["metadata"]["id"]} for document in raw_documents
-            ],
+            metadatas=[document["metadata"] for document in raw_documents
+                       ],
         )
         if show:
             print("Text splitting time: ", time.time() - now)
@@ -80,10 +80,10 @@ class MetadataRAG(RAG):
 
         self.prompt_template = PromptTemplate.from_template(
             """
-            Context : {context}
             As a specialized medical assistant for question-answering, your expertise lies in medicine. You may reference the provided sample document if necessary, but only if relevant. Each document is identified by its title, abstract, and retrieved chunks. If you use an information gived in a document, cite it with its ID in parentheses (e.g., (id)). Your primary goal is to provide accurate responses, adhering to a concise format of up to three sentences for clarity and efficiency. If unsure, simply acknowledge your inability to answer.
+            Context : {context}
             Question : {question}
-            Answer :
+            Answer : 
             """
         )
 
@@ -101,8 +101,7 @@ class MetadataRAG(RAG):
         chunk_list = []
         for metadata_id in results["metadatas"][0]:
             id = metadata_id["id"]
-            metadata = results["metadatas"]
-            print(metadata)
+            metadata = results["metadatas"][0][0]
             if id not in id_list:
                 id_list.append(id)
                 metadata_list.append(metadata)
@@ -132,8 +131,8 @@ class MetadataRAG(RAG):
 
         self.prompt_template = PromptTemplate.from_template(
             """
+            As a specialized medical assistant for question-answering, your expertise lies in medicine. Each document is identified by its title, abstract, and retrieved chunks. Your goal is only to answer by yes or no. If unsure, simply acknowledge your inability to answer with maybe.
             Context : {context}
-            As a specialized medical assistant for question-answering, your expertise lies in medicine. Each document is identified by its title, abstract, and retrieved chunks, cited with its ID in parentheses (e.g., (id)). Your goal is only to answer by yes or no. If unsure, simply acknowledge your inability to answer with maybe.
             Question : {question}
             Answer (Yes/No/Maybe) : 
             """
@@ -198,6 +197,7 @@ class MetadataRAG(RAG):
         results = self.retrieve(question)
         print(len(results["documents"][0]))
         prompt = self.build_prompt(question, results, get_data)
+        print(prompt)
         return self.llm.ask_stream(prompt, web_search=web_search)
 
 
@@ -213,12 +213,12 @@ if __name__ == "__main__":
     rag = MetadataRAG(llm, config)
 
     # Load the collection named "test4_collection"
-    rag.load_collection("test2_collection")
+    rag.load_collection("test_collection")
 
     # Ingest a batch of documents into the collection
     rag.ingest_batch(
         batch_size=8,
-        doc_number=950,
+        doc_number=50,
         data_getter=get_data,
         doc_start=10500000,
         api=False,

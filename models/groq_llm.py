@@ -27,7 +27,7 @@ from utils.custom_utils import load_yaml
 class GroqLLM(LLM):
     def __init__(self, config: Dict[str, Any]) -> None:
         """Initializes the GroqLLM object."""
-        super().__init__(local=False, loaded=False, name=None)
+        super().__init__(local=False, loaded=False, name="GroqLLM")
         self.config = config
         self.client = Groq(api_key=config["groq"]["api_key"])
         self.available_models = self.get_available_models()
@@ -93,8 +93,8 @@ class GroqLLM(LLM):
                 ],
                 stream=True
             )
-            for choice in response.choices:
-                yield choice.message.content
+            for message in response:
+                yield message.choices[0].delta.content
         except Exception as e:
             print("Error streaming response: %s", e)
 

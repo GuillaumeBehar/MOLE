@@ -16,7 +16,7 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 MAIN_DIR_PATH = get_main_dir(0)  # nopep8
 
-from models.hugchat_llm import HugChatLLM
+from models.groq_llm import GroqLLM
 from models.local_gguf_llm import LocalGgufLLM
 from models.rag import RAG
 from models.simple_rag import SimpleRAG
@@ -29,17 +29,36 @@ st.set_page_config(page_title="MOLE", layout="wide")
 
 def display_messages():
     st.subheader("Chat")
-    for msg, user, stream in st.session_state["messages"]:
-        if user == "user":
-            st.session_state["container_message"].chat_message(user).write(msg)
-        elif user == "assistant" and msg != "":
-            if not stream:
-                st.session_state["container_message"].chat_message(
+    with st.session_state["container_message"]:
+        for i, element in enumerate(st.session_state["messages"]):
+            msg, user, stream = element
+            if user == "user":
+                st.chat_message(
                     user).write(msg)
-            elif stream:
-                st.session_state["container_message"].chat_message(
-                    user).write_stream(msg)
-    st.session_state["thinking_spinner"] = st.empty()
+            elif user == "assistant" and msg != "":
+                if not stream:
+                    st.chat_message(
+                        user).write(msg)
+                elif stream:
+                    placeholder = st.empty()
+                    streamed_messages = ""
+                    for message in msg:  # Iterate over the generator
+                        if message != None:
+                            try:
+                                streamed_messages += message.encode(
+                                    'utf-8').decode('utf-8')
+                            except:
+                                try:
+                                    streamed_messages += message.encode(
+                                        'latin1').decode('utf-8')
+                                except:
+                                    streamed_messages += message.encode(
+                                        'utf-8', 'ignore').decode('utf-8', 'ignore')
+                        with placeholder.chat_message(user):
+                            st.write(streamed_messages)
+                    st.session_state["messages"][i] = (
+                        streamed_messages, "assistant", False)
+        st.session_state["thinking_spinner"] = st.empty()
 
 
 def process_input():
@@ -92,16 +111,17 @@ def llm_loader():
         else:
             if type(st.session_state["llm"]) == LocalGgufLLM:
                 st.session_state["llm"].unload_model()
-            if type(st.session_state["llm"]) != HugChatLLM:
+            if type(st.session_state["llm"]) != GroqLLM:
                 st.session_state["messages"] = []
-                st.session_state["llm"] = HugChatLLM(
+                st.session_state["llm"] = GroqLLM(
                     st.session_state["config"])
                 st.session_state["llm"].load_model(0)
             st.selectbox("Select a LLM model",
-                         st.session_state["llm"].available_models,
-                         key="selectbox_hugchat_llm",
-                         format_func=lambda k: k.displayName,
-                         on_change=change_hugchat_llm,
+                         list(
+                             range(len(st.session_state["llm"].available_models))),
+                         key="selectbox_groqchat_llm",
+                         format_func=lambda k: st.session_state["llm"].available_models[k],
+                         on_change=change_groq_llm,
                          label_visibility="collapsed")
             if st.session_state["llm"].loaded:
                 st.write("LLM loaded \u2705")
@@ -145,11 +165,9 @@ def unload_local_llm():
     st.session_state["llm"].unload_model()
 
 
-def change_hugchat_llm():
+def change_groq_llm():
     st.session_state["messages"] = []
-
-    available = st.session_state["llm"].available_models
-    llm_number = available.index(st.session_state["selectbox_hugchat_llm"])
+    llm_number = st.session_state["selectbox_groqchat_llm"]
     st.session_state["llm"].load_model(llm_number)
     print("Changed LLM to : ", st.session_state["llm"].name)
 
