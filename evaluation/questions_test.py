@@ -3,16 +3,6 @@ import json
 import random
 import os
 
-# Obtenez le chemin absolu du répertoire du script Python
-repertoire_script = os.path.dirname(os.path.abspath(__file__))
-
-# Construisez le chemin complet pour le fichier JSON
-chemin_fichier_json = os.path.join(repertoire_script, "pubID_list.json")
-
-with open(chemin_fichier_json, "r") as file:
-    # Charger les données JSON depuis le fichier
-    data = json.load(file)
-
 
 def get_main_dir(depth: int = 0):  # nopep8
     """Get the main directory of the project."""
@@ -27,28 +17,41 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 
 MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+
 from utils.lecture_xml import pmid_to_pmcid, get_data
 
+# Obtenez le chemin absolu du répertoire du script Python
+repertoire_script = os.path.dirname(os.path.abspath(__file__))
+
+# Construisez le chemin complet pour le fichier JSON
+chemin_fichier_json = os.path.join(repertoire_script, "pubID_list.json")
+
+with open(chemin_fichier_json, "r") as file:
+    # Charger les données JSON depuis le fichier
+    data = json.load(file)
 
 # Construction de la liste des choix, où tout les articles sont dans PMC et sont récupérables
 
-# liste_id = data['pubid_list']
-# choix = []
-# i = 0
-# bon = 0
+liste_id = data['pubid_list']
+choix = []
+i = 0
+bon = 0
 
-# while len(choix) < 50:
-#     article = random.choice(liste_id)
-#     liste_id.remove(article)
-#     if (pmid_to_pmcid(article) != None):
-#         bon += 1
-#         if(get_data(int(pmid_to_pmcid(article))) != None):
-#             choix.append(article)
-#     i += 1
-#     if i == 10:
-#         print(bon)
-#         print(len(choix))
-#         i = 0
+while len(choix) < 50:
+    article = random.choice(liste_id)
+    print("PMID :", article)
+    liste_id.remove(article)
+    if ((id := pmid_to_pmcid(article)) != None):
+        bon += 1
+        print("PMCID :", id)
+        data = get_data(id, api=True, show=True)
+        if (data != None):
+            choix.append(article)
+    i += 1
+    if i == 10:
+        print(bon)
+        print(len(choix))
+        i = 0
 
 # print(choix)
 
@@ -68,4 +71,4 @@ id_test_pmc = ['5238935', '3446379', '4647573', '3637408', '4258008', '10282314'
 
 id_test_pmc = [int(num) for num in id_test_pmc]
 for i in range(3):
-    print(get_data(id_test_pmc[i], True))
+    print(get_data(id, api=True, show=True))

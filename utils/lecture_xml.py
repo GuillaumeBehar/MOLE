@@ -195,8 +195,8 @@ def pmid_to_pmcid(id: int):
         http = urllib3.PoolManager()
         response = http.request("GET", url)
         json_dict = json.loads(response.data.decode("utf-8"))
-        print(json_dict["records"][0])
-        return int(json_dict["records"][0]["pmcid"].split("PMC")[1])
+        id = int(json_dict["records"][0]["pmcid"].split("PMC")[1])
+        return id
     except:
         print(f"PMID{id} not found")
         return None
