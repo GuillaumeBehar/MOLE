@@ -34,18 +34,18 @@ def create_collections():
     rag = SimpleRAG(llm, config)
 
     doc_count = 1000
-    chunck_size = 256
+    chunk_size = 256
     batch_size = 4
     rag.text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunck_size, chunk_overlap=64)
-    rag.chroma_client.delete_collection(f"{chunck_size}_{doc_count}")
-    rag.load_collection(f"{chunck_size}_{doc_count}")
+        chunk_size=chunk_size, chunk_overlap=64)
+    rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    rag.load_collection(f"{chunk_size}_{doc_count}")
     rag.ingest_list(
         batch_size=batch_size,
         id_list=id_test_pmc,
         data_getter=get_data,
         api=True,
-        show=False,
+        show=True,
     )
     rag.ingest_batch(
         batch_size=batch_size,
@@ -53,16 +53,17 @@ def create_collections():
         data_getter=get_data,
         doc_start=10500000,
         api=False,
-        show=False,
+        show=True,
     )
     print("Number of chunk in the collection:", rag.collection.count())
 
     # doc_count = 950
-    # chunck_size = 256
+    # chunk_size = 256
     # batch_size = 4
     # rag.text_splitter = RecursiveCharacterTextSplitter(
-    #     chunk_size=chunck_size, chunk_overlap=64)
-    # rag.load_collection(f"{chunck_size}_{doc_count}")
+    #     chunk_size=chunk_size, chunk_overlap=64)
+    # rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    # rag.load_collection(f"{chunk_size}_{doc_count}")
     # rag.ingest_batch(
     #     batch_size=batch_size,
     #     doc_number=doc_count,
@@ -74,12 +75,12 @@ def create_collections():
     # print("Number of chunk in the collection:", rag.collection.count())
 
     doc_count = 1000
-    chunck_size = 512
+    chunk_size = 512
     batch_size = 8
     rag.text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunck_size, chunk_overlap=64)
-    rag.chroma_client.delete_collection(f"{chunck_size}_{doc_count}")
-    rag.load_collection(f"{chunck_size}_{doc_count}")
+        chunk_size=chunk_size, chunk_overlap=64)
+    rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    rag.load_collection(f"{chunk_size}_{doc_count}")
     rag.ingest_list(
         batch_size=batch_size,
         id_list=id_test_pmc,
@@ -98,11 +99,12 @@ def create_collections():
     print("Number of chunk in the collection:", rag.collection.count())
 
     # doc_count = 950
-    # chunck_size = 512
+    # chunk_size = 512
     # batch_size = 8
     # rag.text_splitter = RecursiveCharacterTextSplitter(
-    #     chunk_size=chunck_size, chunk_overlap=64)
-    # rag.load_collection(f"{chunck_size}_{doc_count}")
+    #     chunk_size=chunk_size, chunk_overlap=64)
+    # rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    # rag.load_collection(f"{chunk_size}_{doc_count}")
     # rag.ingest_batch(
     #     batch_size=batch_size,
     #     doc_number=doc_count,
@@ -114,12 +116,12 @@ def create_collections():
     # print("Number of chunk in the collection:", rag.collection.count())
 
     doc_count = 1000
-    chunck_size = 768
+    chunk_size = 768
     batch_size = 12
     rag.text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunck_size, chunk_overlap=64)
-    rag.chroma_client.delete_collection(f"{chunck_size}_{doc_count}")
-    rag.load_collection(f"{chunck_size}_{doc_count}")
+        chunk_size=chunk_size, chunk_overlap=64)
+    rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    rag.load_collection(f"{chunk_size}_{doc_count}")
     rag.ingest_list(
         batch_size=batch_size,
         id_list=id_test_pmc,
@@ -138,11 +140,12 @@ def create_collections():
     print("Number of chunk in the collection:", rag.collection.count())
 
     # doc_count = 950
-    # chunck_size = 768
+    # chunk_size = 768
     # batch_size = 12
     # rag.text_splitter = RecursiveCharacterTextSplitter(
-    #     chunk_size=chunck_size, chunk_overlap=64)
-    # rag.load_collection(f"{chunck_size}_{doc_count}")
+    #     chunk_size=chunk_size, chunk_overlap=64)
+    # rag.chroma_client.delete_collection(f"{chunk_size}_{doc_count}")
+    # rag.load_collection(f"{chunk_size}_{doc_count}")
     # rag.ingest_batch(
     #     batch_size=batch_size,
     #     doc_number=doc_count,
@@ -162,17 +165,23 @@ if __name__ == "__main__":
 
     # llm = LocalGgufLLM(config)
     # llm = HugChatLLM(config)
-    # llm = GroqLLM(config)
-    # model_id = 2
-    # rag = SimpleRAG(llm, config)
+    llm = GroqLLM(config)
+    model_id = 0
+    rag = SimpleRAG(llm, config)
 
-    # doc_count = 1000
-    # chunck_size = 256
-    # rag.load_collection(f"{chunck_size}_{doc_count}")
-    # print("Number of chunk in the collection:", rag.collection.count())
-    # llm.load_model(model_id)
-    # scores = evaluate_long(
-    #     llm=rag, id_instances_list=id_test_pm, show=False)
-    # print(f'Average Scores: {scores}')
-    # with open(f"raghug_scores_{chunck_size}_collection_1000.json", "w") as f:
-    #     json.dump(scores, f)
+    for doc_count in [950]:
+        for chunk_size in [256, 512, 768]:
+            rag.load_collection(f"{chunk_size}_{doc_count}")
+            print(
+                f"Number of chunk in the collection {chunk_size}_{doc_count}:", rag.collection.count())
+
+    doc_count = 950
+    chunk_size = 512
+    rag.load_collection(f"{chunk_size}_{doc_count}")
+    print("Number of chunk in the collection:", rag.collection.count())
+    llm.load_model(model_id)
+    scores = evaluate_long(
+        llm=rag, id_instances_list=id_test_pm, show=False)
+    print(f'Average Scores: {scores}')
+    with open(f"{rag.name}_{chunk_size}_{doc_count}.json", "w") as f:
+        json.dump(scores, f)
