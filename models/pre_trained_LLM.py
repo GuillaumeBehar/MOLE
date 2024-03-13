@@ -1,5 +1,5 @@
 import torch
-
+import spacy
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 import sys
@@ -25,7 +25,7 @@ class Biogpt(LLM):
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Yes | No Question: "
+        begin_prompt = "Question: "
         end_prompt = " Answer: "
 
         sequences = self.pipeline(
@@ -68,10 +68,24 @@ def generate_from_biogpt(list_of_input_text) -> str:
     return sequences
 
 
+# Charger le modèle spaCy pour l'anglais
+nlp = spacy.load("en_core_web_sm")
+
+
+def analyse_neg(texte):
+    doc = nlp(texte)
+
+    # Exemple d'analyse : vérifier si le texte est à la forme négative
+    est_negatif = any(token.dep_ == "neg" for token in doc)
+
+    return est_negatif
+
+
 if __name__ == "__main__":
     Bio = Biogpt(True, False, name='jpp')
-    text = "Are group 2 innate lymphoid cells ( ILC2s ) increased in chronic rhinosinusitis with nasal polyps or eosinophilia?"
+    text = "Does vagus nerve contribute to the development of steatohepatitis and obesity in phosphatidylethanolamine N-methyltransferase deficient mice?"
     output = Bio.ask(text)
     print(output)
     yesno_pipe = pipeline("text-classification")
     print(yesno_pipe(output))
+    print(analyse_neg(output))
