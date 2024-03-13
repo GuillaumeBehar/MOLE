@@ -23,7 +23,7 @@ MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 # from models.hugchat_llm import HugChatLLM
 # from models.llm import LLM
 from models.pre_trained_LLM import *
-from evaluation.our_metrics import get_all_scores, get_rouge_score
+from evaluation.our_metrics import get_all_scores, get_rouge1_score
 
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"
 
@@ -72,27 +72,44 @@ def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     return results
 
 
-def evaluate_short(llm: LLM, n_instances: int, show: bool) -> str | dict:
-    for i in range(min(n_instances, len(EVALUATION_DATAFRAME))):
-        instance = EVALUATION_DATAFRAME.iloc[i]
+def get_yesno(answer: str) -> str:
+    if answer == "Yes.":
+        return "yes"
+    elif answer == "No.":
+        return "no"
+    else:
+        print(answer)
+
+
+def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
+    generated = []
+    targets = []
+    for id in tqdm(id_instances_list):
+        instance = get_instance_from_pubid(id)
         question = instance["question"]
-        long_answer = [instance["final_decision"]]
+        yesno_answer = [instance["final_decision"]]
         generated_answer = llm.ask(question)
+        generated.append(generated_answer)
+        targets.append(yesno_answer)
         if show:
-            print(f"\nInstance {i + 1}:")
+            print(f"\nInstance {question}:")
             print(f"Generated Answer: {generated_answer}")
-            print(f"Expected Answer: {long_answer[0]}")
-            print(get_rouge_score([generated_answer], [long_answer]))
+            print(f"Expected Answer: {yesno_answer[0]}")
+            print(f'rouge: {get_rouge1_score([generated_answer], [yesno_answer])}')
+    #print(generated)
+    #print(targets)
+    results = get_rouge1_score(generated, targets)
+    return results
+
 
 
 
 
 if __name__ == "__main__":
-    list_of_id = get_pmid_list('list.json', n_instance=3)
+    list_of_id = get_pmid_list('list.json', n_instance=50)
     biogpt = Biogpt(True, False, name="jpp")
-    # config = load_yaml(MAIN_DIR_PATH + "./config.yaml")
-    #
-    # hugchat_llm = HugChatLLM(config)
-    scores = evaluate_long(
-        llm=biogpt, id_instances_list=list_of_id, show=False)
-    print(f'Average Scores: {scores}')
+    scores = evaluate_short(
+        llm=biogpt,
+        id_instances_list=list_of_id,
+        show=False)
+    print(f'Scores: {scores}')

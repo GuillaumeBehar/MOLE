@@ -1,4 +1,5 @@
 from evaluate import load
+from rouge_score import rouge_scorer
 import numpy as np
 
 bleu = load("bleu")
@@ -48,6 +49,26 @@ def get_all_scores(predictions: list[str], targets: list[list[str]]) -> dict:
     return res
 
 
+def get_rouge1_score(predictions: list[str], targets: list[list[str]]) -> dict[str, dict[str, str]]:
+    precision_scores = []
+    recall_scores = []
+    f1_scores = []
+    scorer = rouge_scorer.RougeScorer(
+        ['rouge1'],
+        use_stemmer=True
+    )
+    for prediction, target in zip(predictions, targets):
+        rougescore = scorer.score(target[0], prediction).get('rouge1')
+        precision_scores.append(rougescore.precision)
+        recall_scores.append(rougescore.recall)
+        f1_scores.append(rougescore.fmeasure)
+    scores = {"precision": str(np.mean(precision_scores)),
+              "recall": str(np.mean(recall_scores)),
+              "f1": str(np.mean(f1_scores))
+              }
+    return scores
+
+
 if __name__ == '__main__':
     preds = ["Transformers Transformers are fast plus efficient",
              "Good Morning", "I am waiting for new Transformers"]
@@ -57,5 +78,5 @@ if __name__ == '__main__':
         ["Good Morning", "I am waiting for new Transformers",
          "People are very excited about new Transformers"]
     ]
-    scores = get_all_scores(predictions=preds, targets=refs)
+    scores = get_rouge1_score(predictions=preds, targets=refs)
     print(scores)
