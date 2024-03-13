@@ -190,9 +190,10 @@ def pmid_to_pmcid(id: int):
         response = http.request("GET", url)
         json_dict = json.loads(response.data.decode("utf-8"))
         print(json_dict["records"][0])
-        return json_dict["records"][0]["pmcid"].split("PMC")[1]
+        return int(json_dict["records"][0]["pmcid"].split("PMC")[1])
     except:
-        return (f"PMID{id} not found")
+        print(f"PMID{id} not found")
+        return None
 
 
 if __name__ == "__main__":
