@@ -35,14 +35,18 @@ from utils.lecture_xml import pmid_to_pmcid, get_data
 liste_id = data['pubid_list']
 choix = []
 i = 0
+bon = 0
 
 while len(choix) < 50:
     article = random.choice(liste_id)
     liste_id.remove(article)
-    if (pmid_to_pmcid(article)[0] != 'P') and (get_data(int(pmid_to_pmcid(article))) != None):
-        choix.append(article)
+    if (pmid_to_pmcid(article) != None):
+        bon += 1
+        if(get_data(int(pmid_to_pmcid(article))) != None):
+            choix.append(article)
     i += 1
     if i == 10:
+        print(bon)
         print(len(choix))
         i = 0
 
