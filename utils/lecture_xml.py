@@ -108,7 +108,7 @@ def recursive_get_text(element):
     return all_text
 
 
-def get_data(id: int, api: bool = True, show: bool = False) -> None:
+def get_data(id: int, api: bool = False, show: bool = False) -> None:
     document = {"metadata": {"abstract": ""}, "text": ""}
 
     if api == True:
