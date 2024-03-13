@@ -1,5 +1,4 @@
 # IMPORTATION
-from utils.lecture_xml import pmid_to_pmcid
 import json
 import random
 import os
@@ -28,27 +27,32 @@ def get_main_dir(depth: int = 0):  # nopep8
 
 
 MAIN_DIR_PATH = get_main_dir(1)  # nopep8
+from utils.lecture_xml import pmid_to_pmcid, get_data
 
 
-# Construction de la liste des choix, où tout les articles sont dans PMC
+# Construction de la liste des choix, où tout les articles sont dans PMC et sont récupérables
 
 # liste_id = data['pubid_list']
 # choix = []
 # i = 0
+# bon = 0
 
 # while len(choix) < 50:
 #     article = random.choice(liste_id)
 #     liste_id.remove(article)
-#     if (pmid_to_pmcid(article)[0] != 'P'):
-#         choix.append(article)
+#     if (pmid_to_pmcid(article) != None):
+#         bon += 1
+#         if(get_data(int(pmid_to_pmcid(article))) != None):
+#             choix.append(article)
 #     i += 1
 #     if i == 10:
+#         print(bon)
 #         print(len(choix))
 #         i = 0
 
 # print(choix)
 
-# Retrouver les id de PMC à partir de ceux de PM
+# # Retrouver les id de PMC à partir de ceux de PM
 
 id_test_pm = [22315282, 22417809, 26573152, 23587438, 25485089, 23453038, 24887092, 23194649, 21854558, 20413710, 21139995, 27366677, 24485404, 17114189, 19728867, 22739735, 19547701, 10486375, 22682150, 26663142, 22696140, 27648007, 21092132, 26912052,
               25409881, 23472169, 24156704, 23008026, 16517573, 27160188, 25617223, 23035975, 16503976, 19885211, 15538945, 20011543, 23181353, 26264094, 27350760, 19417601, 23029280, 22002811, 21039601, 27136446, 24217166, 20548040, 24321741, 22679365, 23369247, 22909162]
@@ -63,3 +67,5 @@ id_test_pmc = ['5238935', '3446379', '4647573', '3637408', '4258008', '10282314'
                '4667864', '3589265', '3874777', '3528904', '2111217', '4862165', '4494983', '3552177', '1395302', '2769721', '534803', '2789413', '3538519', '5096553', '4902146', '2727066', '3448698', '5823004', '3058253', '4895376', '3748456', '2905894', '4029300', '3367495', '3552685', '3428737']
 
 id_test_pmc = [int(num) for num in id_test_pmc]
+for i in range(3):
+    print(get_data(id_test_pmc[i], True))

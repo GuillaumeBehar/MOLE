@@ -67,7 +67,6 @@ class SimpleRAG(RAG):
             **{"context": context, "question": question}
         )
         print("Length of prompt:", len(prompt))
-        print(prompt)
         return self.llm.ask(prompt)
 
     def ask_stream(self, question: str, web_search: bool = False) -> Generator:
@@ -78,8 +77,6 @@ class SimpleRAG(RAG):
             **{"context": context, "question": question}
         )
         print("Length of prompt:", len(prompt))
-        print(prompt)
-
         return self.llm.ask_stream(prompt, web_search=web_search)
 
 
