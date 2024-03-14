@@ -2,7 +2,10 @@ import requests
 import pandas as pd
 import json
 import random
+
+from sklearn.metrics import ConfusionMatrixDisplay
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 def get_main_dir(depth: int = 0):  # nopep8
@@ -23,7 +26,7 @@ MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 # from models.hugchat_llm import HugChatLLM
 # from models.llm import LLM
 from models.pre_trained_LLM import *
-from evaluation.our_metrics import get_all_scores, get_rouge1_score
+from evaluation.our_metrics import get_all_scores, get_rouge1_score, get_cm
 
 API_URL = "https://huggingface.co/api/datasets/pubmed_qa/parquet/pqa_artificial/train"
 
@@ -73,43 +76,43 @@ def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
 
 
 def get_yesno(answer: str) -> str:
-    if answer == "Yes.":
+    if answer == " Yes.":
         return "yes"
-    elif answer == "No.":
+    elif answer == " No.":
         return "no"
     else:
         print(answer)
+        return answer
 
 
-def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
+def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
     generated = []
     targets = []
     for id in tqdm(id_instances_list):
         instance = get_instance_from_pubid(id)
         question = instance["question"]
-        yesno_answer = [instance["final_decision"]]
-        generated_answer = llm.ask(question)
+        yesno_answer = instance["final_decision"]
+        generated_answer = get_yesno(llm.ask(question))
         generated.append(generated_answer)
         targets.append(yesno_answer)
-        if show:
+        if show and yesno_answer[0] == 'no':
             print(f"\nInstance {question}:")
             print(f"Generated Answer: {generated_answer}")
             print(f"Expected Answer: {yesno_answer[0]}")
             print(f'rouge: {get_rouge1_score([generated_answer], [yesno_answer])}')
-    #print(generated)
-    #print(targets)
-    results = get_rouge1_score(generated, targets)
+    results = get_cm(generated, targets)
     return results
 
 
-
-
-
 if __name__ == "__main__":
-    list_of_id = get_pmid_list('list.json', n_instance=50)
+    list_of_id = get_pmid_list('list.json', n_instance=1000)
     biogpt = Biogpt(True, False, name="jpp")
     scores = evaluate_short(
         llm=biogpt,
         id_instances_list=list_of_id,
-        show=False)
+        show=True)
     print(f'Scores: {scores}')
+    cm = scores.get("confusion_matrix")
+    cm_display = ConfusionMatrixDisplay(cm).plot()
+    plt.show()
+

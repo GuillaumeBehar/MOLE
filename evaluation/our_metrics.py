@@ -1,3 +1,4 @@
+from sklearn.metrics import confusion_matrix
 from evaluate import load
 from rouge_score import rouge_scorer
 import numpy as np
@@ -49,7 +50,8 @@ def get_all_scores(predictions: list[str], targets: list[list[str]]) -> dict:
     return res
 
 
-def get_rouge1_score(predictions: list[str], targets: list[list[str]]) -> dict[str, dict[str, str]]:
+def get_rouge1_score(predictions: list[str], targets: list[str]) -> dict[str, dict[str, str]]:
+    yes_list = []
     precision_scores = []
     recall_scores = []
     f1_scores = []
@@ -60,13 +62,25 @@ def get_rouge1_score(predictions: list[str], targets: list[list[str]]) -> dict[s
     for prediction, target in zip(predictions, targets):
         rougescore = scorer.score(target[0], prediction).get('rouge1')
         precision_scores.append(rougescore.precision)
-        recall_scores.append(rougescore.recall)
-        f1_scores.append(rougescore.fmeasure)
-    scores = {"precision": str(np.mean(precision_scores)),
-              "recall": str(np.mean(recall_scores)),
-              "f1": str(np.mean(f1_scores))
-              }
+        # recall_scores.append(rougescore.recall)
+        # f1_scores.append(rougescore.fmeasure)
+        # scores = {"precision": str(np.mean(precision_scores)),
+        #           "recall": str(np.mean(recall_scores)),
+        #           "f1": str(np.mean(f1_scores))
+        #           }
+        scores = {"accuracy": str(np.mean(precision_scores))}
     return scores
+
+
+def get_cm(predictions: list[str], targets: list[str]):
+    cm = confusion_matrix(y_true=targets,y_pred=predictions, labels=["yes", "no"])
+    tn, fp, fn, tp = cm.ravel()
+    result = {"confusion_matrix": cm,
+              "true_neg": tn,
+              "false_pos": fp,
+              "false_neg": fn,
+              "true_pos": tp}
+    return result
 
 
 if __name__ == '__main__':
@@ -78,5 +92,5 @@ if __name__ == '__main__':
         ["Good Morning", "I am waiting for new Transformers",
          "People are very excited about new Transformers"]
     ]
-    scores = get_rouge1_score(predictions=preds, targets=refs)
-    print(scores)
+    our_scores = get_rouge_score(predictions=preds, targets=refs)
+    print(our_scores)

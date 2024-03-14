@@ -27,7 +27,7 @@ class Biogpt(LLM):
     def ask(self, input_text: str):
         begin_prompt = "Context: "
         end_prompt = ("Question: Which of the following answers is the most relevant ? "
-                      "Option: Yes; No"
+                      "Option:Yes;No"
                       "Answer:")
 
         sequences = self.pipeline(
