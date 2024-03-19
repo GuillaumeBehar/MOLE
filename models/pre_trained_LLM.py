@@ -37,9 +37,6 @@ class Biogpt(LLM):
         )
         return sequences[0]['generated_text']
 
-    def to(self, device: torch.device) -> None:
-        self.model = self.model.to(device)
-
 
     # def ask(self, sentence: str, web_search: bool = False) -> str:
     #     self.model.eval()

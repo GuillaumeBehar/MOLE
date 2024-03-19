@@ -54,6 +54,29 @@ def get_instance_from_pubid(pubid: int) -> 'pd.core.series.Series':
     row = EVALUATION_DATAFRAME.loc[pubid]
     return row
 
+def answers_generation(llm: LLM, id_instances_list: list, json_filename: str) -> dict:
+    generated_dict = {}
+
+    for id in tqdm(id_instances_list):
+        instance = get_instance_from_pubid(id)
+        question = instance["question"]
+        long_answer = instance["long_answer"]
+        generated_output = llm.ask(question)
+        dict_instance = {"generated_answer": generated_output,
+                         "target_answer": long_answer,
+                         "final_decision_target": instance["final_decision"]
+                         }
+        generated_dict[id] = dict_instance
+
+    with open(json_filename, 'w') as json_file:
+        json.dump(generated_dict, json_file, indent=4)
+    return generated_dict
+
+
+# def yesno_from_answer(llm: LLM, question: str, answer: str) -> str:
+#
+#     return final_answer
+
 
 def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     generated = []
@@ -105,14 +128,15 @@ def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
 
 
 if __name__ == "__main__":
-    list_of_id = get_pmid_list('list.json', n_instance=1000)
+    list_of_id = get_pmid_list('list.json', n_instance=50)
     biogpt = Biogpt(True, False, name="jpp")
-    scores = evaluate_short(
-        llm=biogpt,
-        id_instances_list=list_of_id,
-        show=True)
-    print(f'Scores: {scores}')
-    cm = scores.get("confusion_matrix")
-    cm_display = ConfusionMatrixDisplay(cm).plot()
-    plt.show()
+    answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
+    # scores = evaluate_short(
+    #     llm=biogpt,
+    #     id_instances_list=list_of_id,
+    #     show=True)
+    # print(f'Scores: {scores}')
+    # cm = scores.get("confusion_matrix")
+    # cm_display = ConfusionMatrixDisplay(cm).plot()
+    # plt.show()
 
