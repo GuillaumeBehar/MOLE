@@ -18,8 +18,8 @@ MAIN_DIR_PATH = get_main_dir(1)  # nopep8
 
 from utils.custom_utils import load_yaml
 from evaluation.pmcqa_evaluate import evaluate_long
-# from models.hugchat_llm import HugChatLLM
-# from models.local_gguf_llm import LocalGgufLLM
+from models.hugchat_llm import HugChatLLM
+from models.local_gguf_llm import LocalGgufLLM
 from models.groq_llm import GroqLLM
 from evaluation.questions_test import id_test_pmc, id_test_pm
 from models.metadata_rag import MetadataRAG
@@ -202,7 +202,8 @@ if __name__ == "__main__":
     # llm = HugChatLLM(config)
     llm = GroqLLM(config)
     model_id = 0
-    rag = MetadataRAG(llm, config)
+    rag = SimpleRAG(llm, config)
+    rag.name += "_gemma"
 
     for doc_count in [950, 1000]:
         for chunk_size in [256, 512, 768]:
@@ -210,11 +211,24 @@ if __name__ == "__main__":
             print(
                 f"Number of chunk in the collection {chunk_size}_{doc_count}:", rag.collection.count())
 
+    llm.load_model(model_id)
     for doc_count in [950, 1000]:
-        for chunk_size in [256, 512, 768]:
+        for chunk_size in [512]:
             rag.load_collection(f"{chunk_size}_{doc_count}")
             print("Number of chunk in the collection:", rag.collection.count())
-            llm.load_model(model_id)
+            scores = evaluate_long(
+                llm=rag, id_instances_list=id_test_pm, show=False)
+            print(f'Average Scores: {scores}')
+            with open(f"{rag.name}_{chunk_size}_{doc_count}.json", "w") as f:
+                json.dump(scores, f)
+
+    rag = MetadataRAG(llm, config)
+    rag.name += "_gemma"
+
+    for doc_count in [950, 1000]:
+        for chunk_size in [512]:
+            rag.load_collection(f"{chunk_size}_{doc_count}")
+            print("Number of chunk in the collection:", rag.collection.count())
             scores = evaluate_long(
                 llm=rag, id_instances_list=id_test_pm, show=False)
             print(f'Average Scores: {scores}')

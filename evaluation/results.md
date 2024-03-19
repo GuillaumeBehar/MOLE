@@ -62,6 +62,7 @@ Scores:
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 256_950
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -76,14 +77,23 @@ Collection: 512_950
 Temps d'inférence: /
 Scores:
 
+Fonction de distance: L2
+
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.2341  | 0.0621  | 0.1691  | 0.0317 | 0.0668               | 0.519         | 0.5895     | 0.55   |
+
+Fonction de distance: Cosine
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.2347  | 0.0640  | 0.1693  | 0.0319 | 0.0663               | 0.5199        | 0.5938     | 0.5526 |
 
 #### Test: 
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 768_950
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -97,6 +107,7 @@ Scores:
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 256_1000
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -111,14 +122,24 @@ Collection: 512_1000
 Temps d'inférence: /
 Scores:
 
+Fonction de distance: L2
+
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.3098  | 0.1252  | 0.2221  | 0.0697 | 0.0986               | 0.5788        | 0.6703     | 0.6199 |
+
+Fonction de distance: Cosine
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.3185  | 0.1345  | 0.2283  | 0.075   | 0.1038               | 0.5837        | 0.676      | 0.6252 |
+
 
 #### Test: 
 Modèle: SimpleRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 768_1000
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -134,6 +155,7 @@ Scores:
 Modèle: MetadataRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 256_950
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -148,14 +170,24 @@ Collection: 512_950
 Temps d'inférence: /
 Scores:
 
+Fonction de distance: L2
+
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.1654  | 0.0395  | 0.1232  | 0.0169 | 0.0399               | 0.4767        | 0.4975     | 0.483  |
+
+Fonction de distance: Cosine
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.1568  | 0.0403  | 0.1197  | 0.0185 | 0.0394               | 0.4742        | 0.4953     | 0.4802 |
+
 
 #### Test: 
 Modèle: MetadataRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 768_950
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -172,14 +204,24 @@ Collection: 256_1000
 Temps d'inférence: /
 Scores:
 
+Fonction de distance: L2
+
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.3138  | 0.1823  | 0.2584  | 0.1042 | 0.1143               | 0.5845        | 0.7292     | 0.6462 |
+
+Fonction de distance: Cosine
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
+|-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
+| **Valeur**        | 0.2867  | 0.1728  | 0.239   | 0.0918 | 0.1001               | 0.5827        | 0.7311     | 0.6457 |
+
 
 #### Test: 
 Modèle: MetadataRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 512_1000
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
@@ -191,6 +233,7 @@ Scores:
 Modèle: MetadataRAG avec gemma-7b-it de Groq
 Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
 Collection: 768_1000
+Fonction de distance: L2
 Temps d'inférence: /
 Scores:
 
