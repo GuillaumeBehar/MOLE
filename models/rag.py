@@ -40,7 +40,8 @@ class RAG:
 
     def load_collection(self, collection_name: str) -> None:
         self.collection = self.chroma_client.get_or_create_collection(
-            name=collection_name, embedding_function=self.embedding_function
+            name=collection_name, embedding_function=self.embedding_function, metadata={
+                "hnsw:space": "cosine"}
         )
 
     def ingest(self, raw_documents) -> None:
