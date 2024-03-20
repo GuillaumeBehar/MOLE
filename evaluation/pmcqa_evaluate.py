@@ -129,13 +129,15 @@ def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
 
 
 if __name__ == "__main__":
-    # list_of_id = get_pmid_list('list.json', n_instance=5)
-    # biogpt = Biogpt(True, False, name="jpp")
-    # answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
+    list_of_id = get_pmid_list('list.json', n_instance=500)
+    biogpt = Biogpt(True, False, name="jpp")
+    answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
 
     with open('biogpt_answers.json', 'r') as json_file:
         data = json.load(json_file)
-    print(generate_yesno_from_biogpt(data, "target_answer"))
+    # results_dict = generate_yesno_from_biogpt(data, "target_answer")
+    # with open('final_decisions.json', 'w') as json_file:
+    #     json.dump(results_dict, json_file, indent=4)
 
     # scores = evaluate_short(
     #     llm=biogpt,
