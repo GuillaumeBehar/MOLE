@@ -1,5 +1,6 @@
 import torch
 import spacy
+import json
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 import sys
@@ -25,18 +26,15 @@ class Biogpt(LLM):
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Context: "
-        end_prompt = ("Question: Which of the following answers is the most relevant ? "
-                      "Option:Yes;No"
-                      "Answer:")
+        begin_prompt = "Question: "
+        end_prompt = ("The answer of the question is")
 
         sequences = self.pipeline(
-            begin_prompt+input_text+end_prompt,
+            begin_prompt + input_text + end_prompt,
             max_new_tokens=100,
             return_full_text=False
         )
         return sequences[0]['generated_text']
-
 
     # def ask(self, sentence: str, web_search: bool = False) -> str:
     #     self.model.eval()
@@ -54,22 +52,32 @@ class Biogpt(LLM):
     #     return result
 
 
-def generate_from_biogpt(list_of_input_text) -> str:
+def generate_yesno_from_biogpt(generated_dict: dict, value_to_evaluate: str) -> dict:
     tokenizer = AutoTokenizer.from_pretrained("microsoft/biogpt")
-    model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt")
-    pipeline = pipeline("text-generation",
-                        model=model,
-                        tokenizer=tokenizer,
-                        torch_dtype=torch.bfloat16,
-                        device_map="auto",
-                        )
-    sequences = pipeline(
-        list_of_input_text,
-        max_new_tokens=100,
-        return_full_text=False
-    )
-    return sequences
+    model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt").to(torch.device("cuda"))
+    # pipe = pipeline("question-answering",
+    #                     model=model,
+    #                     tokenizer=tokenizer,
+    #                     torch_dtype=torch.bfloat16,
+    #                     device_map="cuda",
+    #                     )
+    pipe = pipeline("question-answering",
+                    model="dmis-lab/biobert-large-cased-v1.1-squad",
+                    torch_dtype=torch.bfloat16,
+                    device_map="cuda",
+                    )
 
+    for key, value in generated_dict.items():
+        question = value["question"]
+        long_answer = value[value_to_evaluate]
+        short_answer = pipe(
+            question=question,
+            context=long_answer,
+            max_new_tokens=100,
+            return_full_text=False
+        )['answer']
+        value["short_generated"] = short_answer
+    return generated_dict
 
 # Charger le modèle spaCy pour l'anglais
 nlp = spacy.load("en_core_web_sm")

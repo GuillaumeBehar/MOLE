@@ -62,7 +62,8 @@ def answers_generation(llm: LLM, id_instances_list: list, json_filename: str) ->
         question = instance["question"]
         long_answer = instance["long_answer"]
         generated_output = llm.ask(question)
-        dict_instance = {"generated_answer": generated_output,
+        dict_instance = {"question": question,
+                         "generated_answer": generated_output,
                          "target_answer": long_answer,
                          "final_decision_target": instance["final_decision"]
                          }
@@ -128,9 +129,14 @@ def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
 
 
 if __name__ == "__main__":
-    list_of_id = get_pmid_list('list.json', n_instance=50)
-    biogpt = Biogpt(True, False, name="jpp")
-    answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
+    # list_of_id = get_pmid_list('list.json', n_instance=5)
+    # biogpt = Biogpt(True, False, name="jpp")
+    # answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
+
+    with open('biogpt_answers.json', 'r') as json_file:
+        data = json.load(json_file)
+    print(generate_yesno_from_biogpt(data, "target_answer"))
+
     # scores = evaluate_short(
     #     llm=biogpt,
     #     id_instances_list=list_of_id,
