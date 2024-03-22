@@ -80,10 +80,10 @@ class MetadataRAG(RAG):
 
         self.prompt_template = PromptTemplate.from_template(
             """
-            As a specialized medical assistant for question-answering, your expertise lies in medicine. You may reference the provided sample document if necessary, but only if relevant. Each document is identified by its title, abstract, and retrieved chunks. If you use an information gived in a document, cite it with its ID in parentheses (e.g., (id)). Your primary goal is to provide accurate responses, adhering to a concise format of up to three sentences for clarity and efficiency. If unsure, simply acknowledge your inability to answer.
+            As a specialized medical assistant for writing answers, your expertise lies in medicine. You may reference the provided sample document if necessary, but only if relevant. Each document is identified by its title, abstract, and retrieved chunks. If you use an information gived in a document, cite it with its ID in parentheses (e.g., (id)). Your primary goal is to provide accurate responses, adhering to a concise format of up to three sentences for clarity and efficiency. If unsure, simply acknowledge your inability to answer.
             Context : {context}
             Question : {question}
-            Answer : 
+            Answer :
             """
         )
 
