@@ -2,6 +2,8 @@ import argparse
 import os
 from groq import Groq
 import json
+from tqdm import tqdm
+import pandas as pd
 
 def main():
     parser = argparse.ArgumentParser(description="Script Groq")
@@ -20,10 +22,13 @@ def main():
     client = Groq(api_key=api_key)
     with open(args.json_file, 'r') as json_file:
         input_dict = json.load(json_file)
-    output_dict = generate_yesno_from_mixtral(client, input_dict, "target_answer")
+    output_dict = generate_yesno_from_mixtral(client, input_dict, "generated_answer")
+    print('réponses générées.')
 
-    with open('mixtral_decisions.json', 'w') as json_file:
+    with open('biogpt_50decisions.json', 'w') as json_file:
         json.dump(output_dict, json_file, indent=4)
+
+    print('réponses enregistrées dans un json.')
 
 def generate_yesno_from_mixtral(client, generated_dict: dict, value_to_evaluate: str) -> dict:
     format_prompt = "You are answering a boolean question. Important: return 'yes' if the answer is positive and 'no' if the answer is negative."
@@ -36,7 +41,7 @@ def generate_yesno_from_mixtral(client, generated_dict: dict, value_to_evaluate:
     mid_prompt = 'Due to the fact that '
     end_prompt = 'The answer is :'
 
-    for key, value in generated_dict.items():
+    for key, value in tqdm(generated_dict.items(), desc="Generating yes/no answers..."):
         question = value["question"]
         long_answer = value[value_to_evaluate]
         chat_completion = client.chat.completions.create(
@@ -50,8 +55,8 @@ def generate_yesno_from_mixtral(client, generated_dict: dict, value_to_evaluate:
             max_tokens=3,
         )
         value["short_generated"] = chat_completion.choices[0].message.content
-        print(value["short_generated"])
     return generated_dict
+
 
 if __name__ == "__main__":
     main()

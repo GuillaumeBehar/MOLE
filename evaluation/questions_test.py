@@ -25,7 +25,7 @@ from pmcqa_evaluate import get_instance_from_pubid
 repertoire_script = os.path.dirname(os.path.abspath(__file__))
 
 # Construisez le chemin complet pour le fichier JSON
-chemin_fichier_json = os.path.join(repertoire_script, "pubID_list.json")
+chemin_fichier_json = os.path.join(repertoire_script, "no_pubID_list.json")
 
 with open(chemin_fichier_json, "r") as file:
     # Charger les données JSON depuis le fichier
@@ -33,28 +33,29 @@ with open(chemin_fichier_json, "r") as file:
 
 # Construction de la liste des choix, où tout les articles sont dans PMC et sont récupérables
 
-# liste_id = data['pubid_list']
-# choix = []
-# i = 0
-# bon = 0
+liste_id = data['pubid_list']
+print(len(liste_id))
+choix = []
+i = 0
+bon = 0
+test = 0
 
-# while len(choix) < 50:
-#     article = random.choice(liste_id)
-#     print("PMID :", article)
-#     liste_id.remove(article)
-#     if ((id := pmid_to_pmcid(article)) != None):
-#         bon += 1
-#         print("PMCID :", id)
-#         data = get_data(id, api=True, show=True)
-#         if (data != None):
-#             choix.append(article)
-#     i += 1
-#     if i == 10:
-#         print(bon)
-#         print(len(choix))
-#         i = 0
+while len(choix) < 30:
+    article = random.choice(liste_id)
+    # print("PMID :", article)
+    liste_id.remove(article)
+    if ((id := pmid_to_pmcid(article)) != None):
+        data = get_data(id, api=True)
+        test += 1
+        if (data != None):
+            print(f'pmcid: {id}, pmid: {article}')
+            choix.append(article)
+            bon += 1
 
-# print(choix)
+    i += 1
+    if i%100 == 0:
+        print(f'{test} testée, {bon} ajoutée sur {i} vérifiée')
+print(choix)
 
 # Retrouver les id de PMC à partir de ceux de PM
 

@@ -26,12 +26,12 @@ class Biogpt(LLM):
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Question: "
-        end_prompt = ("Answer: ")
+        begin_prompt = "Context: As a Medical specialist, you are answering the following question. Question: "
+        end_prompt = "Answer: "
 
         sequences = self.pipeline(
             begin_prompt + input_text + end_prompt,
-            max_new_tokens=100,
+            max_new_tokens=500,
             return_full_text=False
         )
         return sequences[0]['generated_text']
@@ -70,7 +70,7 @@ def generate_yesno_from_biogpt(generated_dict: dict, value_to_evaluate: str) -> 
         long_answer = value[value_to_evaluate]
         short_answer = pipe(
             begin_prompt + question + mid_prompt + long_answer + end_prompt,
-            max_new_tokens=100,
+            max_new_tokens=500,
             return_full_text=False
         )
         value["short_generated"] = short_answer[0]['generated_text']
