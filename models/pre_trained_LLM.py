@@ -1,5 +1,6 @@
 import torch
 import spacy
+import json
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 import sys
@@ -25,21 +26,15 @@ class Biogpt(LLM):
                                  )
 
     def ask(self, input_text: str):
-        begin_prompt = "Context: "
-        end_prompt = ("Question: Which of the following answers is the most relevant ? "
-                      "Option:Yes;No"
-                      "Answer:")
+        begin_prompt = "Context: As a Medical specialist, you are answering the following question. Question: "
+        end_prompt = "Answer: "
 
         sequences = self.pipeline(
-            begin_prompt+input_text+end_prompt,
-            max_new_tokens=100,
+            begin_prompt + input_text + end_prompt,
+            max_new_tokens=500,
             return_full_text=False
         )
         return sequences[0]['generated_text']
-
-    def to(self, device: torch.device) -> None:
-        self.model = self.model.to(device)
-
 
     # def ask(self, sentence: str, web_search: bool = False) -> str:
     #     self.model.eval()
@@ -57,21 +52,29 @@ class Biogpt(LLM):
     #     return result
 
 
-def generate_from_biogpt(list_of_input_text) -> str:
+def generate_yesno_from_biogpt(generated_dict: dict, value_to_evaluate: str) -> dict:
     tokenizer = AutoTokenizer.from_pretrained("microsoft/biogpt")
-    model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt")
-    pipeline = pipeline("text-generation",
-                        model=model,
-                        tokenizer=tokenizer,
-                        torch_dtype=torch.bfloat16,
-                        device_map="auto",
-                        )
-    sequences = pipeline(
-        list_of_input_text,
-        max_new_tokens=100,
-        return_full_text=False
-    )
-    return sequences
+    model = AutoModelForCausalLM.from_pretrained("microsoft/biogpt").to(torch.device("cuda"))
+    pipe = pipeline("text-generation",
+                    model=model,
+                    tokenizer=tokenizer,
+                    torch_dtype=torch.bfloat16,
+                    device_map="cuda",
+                    )
+    begin_prompt = "Question: "
+    mid_prompt = 'Due to the fact that '
+    end_prompt = ", we can conclude that the answer between yes and no is"
+
+    for key, value in generated_dict.items():
+        question = value["question"]
+        long_answer = value[value_to_evaluate]
+        short_answer = pipe(
+            begin_prompt + question + mid_prompt + long_answer + end_prompt,
+            max_new_tokens=500,
+            return_full_text=False
+        )
+        value["short_generated"] = short_answer[0]['generated_text']
+    return generated_dict
 
 
 # Charger le modèle spaCy pour l'anglais
@@ -89,10 +92,11 @@ def analyse_neg(texte):
 
 if __name__ == "__main__":
     Bio = Biogpt(True, False, name='jpp')
-    text = ("Does vagus nerve contribute to the development of steatohepatitis and obesity in phosphatidylethanolamine "
-            "N-methyltransferase deficient mice?")
+    text = ("Is impact of the tumor microenvironment on prognosis in follicular lymphoma dependent on specific "
+            "treatment protocols?")
     output = Bio.ask(text)
     print(output)
-    yesno_pipe = pipeline("text-classification")
-    print(yesno_pipe(output))
-    print(analyse_neg(output))
+    output_dict = {"19059937": {"question": text,
+                                "answer": output}
+                   }
+    print(generate_yesno_from_biogpt(output_dict, "answer"))

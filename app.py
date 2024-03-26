@@ -70,10 +70,10 @@ def process_input():
             with st.session_state["thinking_spinner"], st.spinner(f"Thinking"):
                 if st.session_state["toggle_rag"]:
                     agent_text, stream = st.session_state["rag"].ask_stream(
-                        user_text, web_search=st.session_state["toggle_web_search"]), True
+                        user_text, False), True
                 else:
                     agent_text, stream = st.session_state["llm"].ask_stream(
-                        user_text, web_search=st.session_state["toggle_web_search"]), True
+                        user_text, False), True
             st.session_state["messages"].append(
                 (agent_text, "assistant", stream))
         else:
@@ -128,7 +128,6 @@ def llm_loader():
                 st.write("LLM loaded \u2705")
             else:
                 st.session_state["load_model_spinner"] = st.empty()
-        st.toggle("Web search", key="toggle_web_search")
 
 
 def rag_loader():

@@ -27,7 +27,7 @@ from utils.lecture_xml import get_data
 class SimpleRAG(RAG):
     def __init__(self, llm: LLM, config: dict) -> None:
         """Initialize the class with the provided large language model."""
-        super().__init__(llm=llm, config=config, name="SimpleeRAG")
+        super().__init__(llm=llm, config=config, name="SimpleRAG")
         self.embedding_function = SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2", device="cuda"
         )
