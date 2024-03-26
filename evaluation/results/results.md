@@ -101,6 +101,19 @@ Scores:
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.213   | 0.0594  | 0.152   | 0.0304 | 0.0584               | 0.5075        | 0.5792     | 0.5395 |
 
+
+#### Test: 
+Modèle: SimpleRAG avec meditron-7b-chat.Q8_0 en GGUF local
+Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
+Collection: 512_950
+Fonction de distance: L2
+Temps d'inférence: /
+Scores:
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu    | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1  |
+|-------------------|---------|---------|---------|---------|----------------------|---------------|------------|---------|
+| **Valeur**        | 0.1287  | 0.0244  | 0.0886  | 0.00895 | 0.0253               | 0.422         | 0.5527     | 0.4771  |
+
+
 ### Contient les documents spécifiés par Q&A
 
 #### Test: 
@@ -146,6 +159,19 @@ Scores:
 | Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu   | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1 |
 |-------------------|---------|---------|---------|--------|----------------------|---------------|------------|--------|
 | **Valeur**        | 0.3071  | 0.1298  | 0.2287  | 0.0715 | 0.0975               | 0.5775        | 0.6815     | 0.6231 |
+
+#### Test: 
+Modèle: SimpleRAG avec meditron-7b-chat.Q8_0 en GGUF local
+Prompt: {instruction}{contexte}{question} avec 5 retrieved documents
+Collection: 512_1000
+Fonction de distance: L2
+Temps d'inférence: /
+Scores:
+
+| Métrique          | Rouge-1 | Rouge-2 | Rouge-L | Bleu    | Avg Precision (Bleu) | Avg Precision | Avg Recall | Avg F1  |
+|-------------------|---------|---------|---------|---------|----------------------|---------------|------------|---------|
+| **Valeur**        | 0.19295 | 0.06253 | 0.13224 | 0.02378 | 0.04152              | 0.49747       | 0.65172    | 0.56232 |
+
 
 ## Les MetadataRAG
 

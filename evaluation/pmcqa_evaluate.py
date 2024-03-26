@@ -36,9 +36,9 @@ def query(api):
     return response.json()
 
 
-url_parquet = query(API_URL)[0]
-EVALUATION_DATAFRAME = pd.read_parquet(url_parquet)
-EVALUATION_DATAFRAME.set_index('pubid', inplace=True)
+# url_parquet = query(API_URL)[0]
+# EVALUATION_DATAFRAME = pd.read_parquet(url_parquet)
+# EVALUATION_DATAFRAME.set_index('pubid', inplace=True)
 
 
 def get_pmid_list(json_name: str, n_instance: int) -> list[int]:
@@ -101,15 +101,14 @@ def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     return results
 
 
-def evaluate_long_from_file(file: str, id_instances_list: list, show: bool) -> str | dict:
+def evaluate_long_from_dict(generated_dict: dict, id_instances_list: list, show: bool) -> str | dict:
     generated = []
     targets = []
 
     for id in tqdm(id_instances_list):
         instance = get_instance_from_pubid(id)
-        question = instance["question"]
+        generated_output = generated_dict[str(id)]["generated_answer"]
         long_answer = [instance["long_answer"]]
-        generated_output = llm.ask(question)
         generated.append(generated_output)
         targets.append(long_answer)
         if show:
@@ -164,14 +163,14 @@ if __name__ == "__main__":
     # biogpt = Biogpt(True, False, name="jpp")
     # answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers2.json')
 
-    with open('biogpt_50decisions.json', 'r') as json_file:
+    with open('results/SimpleRAG_meditron_512_1000.json', 'r') as json_file:
         data = json.load(json_file)
 
-    Mixtral_evaluation = evaluate_short_from_dict(data)
-    print(Mixtral_evaluation)
-    cm = Mixtral_evaluation.get("confusion_matrix")
-    cm_display = ConfusionMatrixDisplay(cm).plot()
-    plt.show()
+    # Mixtral_evaluation = evaluate_short_from_dict(data)
+    # print(Mixtral_evaluation)
+    # cm = Mixtral_evaluation.get("confusion_matrix")
+    # cm_display = ConfusionMatrixDisplay(cm).plot()
+    # plt.show()
 
     # results_dict = generate_yesno_from_biogpt(data, "target_answer")
     # with open('final_decisions.json', 'w') as json_file:
@@ -192,3 +191,5 @@ if __name__ == "__main__":
                   21617180, 24958351, 27500275, 19933996, 24330812, 26227965, 27574676, 27473420, 22709483, 26289293,
                   23949151, 27336604, 26460750, 18575589, 24884655, 18493326, 23015864, 26175775, 26418562, 26418133,
                   21696606, 25036418, 24847033, 26295946, 27595989, 21981946]
+
+    print(evaluate_long_from_dict(data, id_test_pm, show=False))
