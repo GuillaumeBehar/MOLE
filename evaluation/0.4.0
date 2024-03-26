@@ -1,39 +1,14 @@
 Defaulting to user installation because normal site-packages is not writeable
-Collecting FuzzyTM
-  Downloading FuzzyTM-2.0.5-py3-none-any.whl.metadata (7.8 kB)
+Requirement already satisfied: FuzzyTM in c:\users\leatr\appdata\roaming\python\python39\site-packages (2.0.5)
 Requirement already satisfied: numpy in c:\users\leatr\appdata\roaming\python\python39\site-packages (from FuzzyTM) (1.25.2)
 Requirement already satisfied: pandas in c:\programdata\anaconda3\lib\site-packages (from FuzzyTM) (2.1.4)
 Requirement already satisfied: scipy in c:\programdata\anaconda3\lib\site-packages (from FuzzyTM) (1.11.4)
-Collecting pyfume (from FuzzyTM)
-  Downloading pyFUME-0.3.1-py3-none-any.whl.metadata (9.7 kB)
+Requirement already satisfied: pyfume in c:\users\leatr\appdata\roaming\python\python39\site-packages (from FuzzyTM) (0.3.1)
 Requirement already satisfied: python-dateutil>=2.8.2 in c:\programdata\anaconda3\lib\site-packages (from pandas->FuzzyTM) (2.8.2)
 Requirement already satisfied: pytz>=2020.1 in c:\programdata\anaconda3\lib\site-packages (from pandas->FuzzyTM) (2023.3.post1)
 Requirement already satisfied: tzdata>=2022.1 in c:\programdata\anaconda3\lib\site-packages (from pandas->FuzzyTM) (2023.3)
-Collecting simpful (from pyfume->FuzzyTM)
-  Downloading simpful-2.12.0-py3-none-any.whl.metadata (4.8 kB)
-Collecting fst-pso (from pyfume->FuzzyTM)
-  Downloading fst-pso-1.8.1.tar.gz (18 kB)
-  Preparing metadata (setup.py): started
-  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: simpful in c:\users\leatr\appdata\roaming\python\python39\site-packages (from pyfume->FuzzyTM) (2.12.0)
+Requirement already satisfied: fst-pso in c:\users\leatr\appdata\roaming\python\python39\site-packages (from pyfume->FuzzyTM) (1.8.1)
 Requirement already satisfied: typing-extensions in c:\users\leatr\appdata\roaming\python\python39\site-packages (from pyfume->FuzzyTM) (4.8.0)
 Requirement already satisfied: six>=1.5 in c:\programdata\anaconda3\lib\site-packages (from python-dateutil>=2.8.2->pandas->FuzzyTM) (1.16.0)
-Collecting miniful (from fst-pso->pyfume->FuzzyTM)
-  Downloading miniful-0.0.6.tar.gz (2.8 kB)
-  Preparing metadata (setup.py): started
-  Preparing metadata (setup.py): finished with status 'done'
-Downloading FuzzyTM-2.0.5-py3-none-any.whl (29 kB)
-Downloading pyFUME-0.3.1-py3-none-any.whl (59 kB)
-   ---------------------------------------- 0.0/59.6 kB ? eta -:--:--   ---------------------------------------- 59.6/59.6 kB 3.1 MB/s eta 0:00:00
-Downloading simpful-2.12.0-py3-none-any.whl (24 kB)
-Building wheels for collected packages: fst-pso, miniful
-  Building wheel for fst-pso (setup.py): started
-  Building wheel for fst-pso (setup.py): finished with status 'done'
-  Created wheel for fst-pso: filename=fst_pso-1.8.1-py3-none-any.whl size=20451 sha256=e404293702d3d5539e7572b6f3129fef3e97f3bd996b3b54138d53b1f25a1b94
-  Stored in directory: c:\users\leatr\appdata\local\pip\cache\wheels\99\66\48\d7ce0c6927f6abf167bbcdee537affc7b92c03632f78028411
-  Building wheel for miniful (setup.py): started
-  Building wheel for miniful (setup.py): finished with status 'done'
-  Created wheel for miniful: filename=miniful-0.0.6-py3-none-any.whl size=3517 sha256=339e9abcd82089f1cfcac555f7a1dbdc0ad5d2c379569986885cb4b8a63f8e1b
-  Stored in directory: c:\users\leatr\appdata\local\pip\cache\wheels\d9\c7\71\db1d4646d963b34c530667501d3d6f34c0825eaffae2f0f2cb
-Successfully built fst-pso miniful
-Installing collected packages: simpful, miniful, fst-pso, pyfume, FuzzyTM
-Successfully installed FuzzyTM-2.0.5 fst-pso-1.8.1 miniful-0.0.6 pyfume-0.3.1 simpful-2.12.0
+Requirement already satisfied: miniful in c:\users\leatr\appdata\roaming\python\python39\site-packages (from fst-pso->pyfume->FuzzyTM) (0.0.6)
