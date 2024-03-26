@@ -54,6 +54,7 @@ def get_instance_from_pubid(pubid: int) -> 'pd.core.series.Series':
     row = EVALUATION_DATAFRAME.loc[pubid]
     return row
 
+
 def answers_generation(llm: LLM, id_instances_list: list, json_filename: str) -> dict:
     generated_dict = {}
 
@@ -99,6 +100,26 @@ def evaluate_long(llm: LLM, id_instances_list: list, show: bool) -> str | dict:
     return results
 
 
+def evaluate_long_from_file(file: str, id_instances_list: list, show: bool) -> str | dict:
+    generated = []
+    targets = []
+
+    for id in tqdm(id_instances_list):
+        instance = get_instance_from_pubid(id)
+        question = instance["question"]
+        long_answer = [instance["long_answer"]]
+        generated_output = llm.ask(question)
+        generated.append(generated_output)
+        targets.append(long_answer)
+        if show:
+            print(f"Generated Answer: {generated_output}")
+            print(f"Expected Answer: {long_answer[0]}")
+            print(get_all_scores([generated_output], [long_answer]))
+
+    results = get_all_scores(predictions=generated, targets=targets)
+    return results
+
+
 def get_yesno(answer: str) -> str:
     if answer == " Yes.":
         return "yes"
@@ -123,7 +144,8 @@ def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
             print(f"\nInstance {question}:")
             print(f"Generated Answer: {generated_answer}")
             print(f"Expected Answer: {yesno_answer[0]}")
-            print(f'rouge: {get_rouge1_score([generated_answer], [yesno_answer])}')
+            print(
+                f'rouge: {get_rouge1_score([generated_answer], [yesno_answer])}')
     results = get_cm(generated, targets)
     return results
 
@@ -131,7 +153,8 @@ def evaluate_short(llm: LLM, id_instances_list: list, show: bool) -> dict:
 if __name__ == "__main__":
     list_of_id = get_pmid_list('list.json', n_instance=500)
     biogpt = Biogpt(True, False, name="jpp")
-    answers_generated = answers_generation(biogpt, list_of_id, 'biogpt_answers.json')
+    answers_generated = answers_generation(
+        biogpt, list_of_id, 'biogpt_answers.json')
 
     with open('biogpt_answers.json', 'r') as json_file:
         data = json.load(json_file)
@@ -147,4 +170,3 @@ if __name__ == "__main__":
     # cm = scores.get("confusion_matrix")
     # cm_display = ConfusionMatrixDisplay(cm).plot()
     # plt.show()
-
